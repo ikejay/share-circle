@@ -2,12 +2,7 @@
   "watch": [
     "src"
   ],
-  "ext": "ts",
-  "ignore": [
-    "src/**/*.test.ts"
-  ],
-  "exec": "tsx src/index.ts",
-  "env": {
-    "NODE_ENV": "development"
-  }
+  "ext": ".ts,.json",
+  "ignore": [],
+  "exec": "ts-node ./src/index.ts"
 }
