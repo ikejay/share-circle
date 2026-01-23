@@ -26,11 +26,16 @@ describe( 'Brand Tests', () => {
       await expect( test ).rejects.toThrowError( 'BRAND NAME IS EMPTY' )
     } )
 
-
     test( 'Should throw error, BRAND NAME IS TOO LONG', async () => {
       const test = async () => Brand.create( 'AIDAOIDMIAODIVAIODIAJIDOFAIOSIDFJAIMODFIAOIDFJAIODFIAJIOIMIAOIDOAI' )
 
       await expect( test ).rejects.toThrowError( 'BRAND NAME IS TOO LONG' )
+    } )
+
+    test( 'Should NOT throw error, if BRAND NAME IS "0123456789012345678901234567890123"', async () => {
+      const test = await Brand.create( '    0123456789012345678901234567890123' )
+
+      expect( test.name ).toBe( '0123456789012345678901234567890123' )
     } )
 
     test( 'Should return name GERMANCHEF without leading empty space', async () => {
@@ -57,15 +62,7 @@ describe( 'Brand Tests', () => {
       expect( brandName ).toBe( 'AKAI' )
     } )
 
-    test( 'Should return name Zollner Elektronik AG without removing empty spaces between the names', async () => {
-      const test = async () => Brand.create( 'Zollner Elektronik AG' )
-      const getBrand = await test()
-      const brandName = getBrand.name
-
-      expect( brandName ).toBe( 'Zollner Elektronik AG' )
-    } )
-
-    test( 'Should return name Burmester Audiosysteme without removing empty spaces between the names', async () => {
+    test( 'Should return name "Burmester Audiosysteme" without removing empty spaces between the names', async () => {
       const test = async () => Brand.create( ' Burmester Audiosysteme  ' )
       const getBrand = await test()
       const brandName = getBrand.name
