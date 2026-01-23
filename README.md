@@ -64,15 +64,20 @@ docker-compose up
 - Typescript
 - PostgreSQL
 - Knex.js (SQL query builder)
-- Passport Authentication
+- JWT with Passport Authentication (Multiple strategies)
+  - Local login (email and password)
+  - Google OAuth
+  - Apple OAuth
 
 ### Infrastructure
+
 - Docker && Docker Compose
 - PostgreSQL 15+
 
-
 ## Setup & Installation
+
 ### Using Docker(Currently only Database works with docker)
+
 ```bash
 # Clone and navigate to the project
 https://github.com/ikejay/base-shop.git
@@ -83,8 +88,8 @@ docker-compose up --build
 
 ```
 
-
 ### Frontend
+
 ```bash
 # Navigate to frontend folder
 cd frontend
@@ -98,6 +103,7 @@ yarn dev
 ```
 
 ### Backend
+
 ```bash
 # Navigate to frontend folder
 cd backend
@@ -111,6 +117,7 @@ yarn dev
 ```
 
 ## Project Structure
+
 ```bash
 shop/
 ├── backend/                    # Node.js + TypeScript API
@@ -129,9 +136,10 @@ shop/
 └── README.md                   # This file
 ```
 
-
 ## Environment Variables
+
 ### Backend(.env)
+
 ```bash
 DB_HOST=localhost
 DB_PORT=5432
