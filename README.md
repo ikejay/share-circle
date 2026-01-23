@@ -9,7 +9,7 @@ with Knex.js for data operations. Users can browse products, view details, and a
 
 ```bash
 # Clone the repository
-https://github.com/ikejay/base-shop.git
+git clone https://github.com/ikejay/base-shop.git
 cd base-shop
 
 # Start all services with Docker
@@ -44,9 +44,22 @@ docker-compose up
 
 ## Prerequisites
 
-- Docker && Docker Compose
-- Node 22
-- Git
+### Common Prerequisites(For both)
+
+| Tool           | Minimum Version | Recommended Version |   Verification Command    |
+|:---------------|:---------------:|:-------------------:|:-------------------------:|
+| Docker         |     20.10+      |         24          |     docker --version      |
+| Docker Compose |      2.12+      |        2.24+        | docker-compose --versioon |
+| Node           |      20.x       |        22.x         |      node --version       |
+| Yarn           |     1.22.x      |       1.22.22       |      yarn --version       |
+
+### Frontend Specific Prerequisite
+
+| Tool       | Requiired Version |       Purpose       | Verification Command |
+|:-----------|:-----------------:|:-------------------:|:--------------------:|
+| Vue CLI    |       5.0.8       | Project Scaffolding |    vue --version     |
+| Quasar CLI |       2.0+        |    UI Framework     |  quasar --versioon   |
+| Typescript |       20.x        |     Type Safety     |  npx tsc --version   |
 
 ## Teck Stack
 
@@ -65,9 +78,9 @@ docker-compose up
 - PostgreSQL
 - Knex.js (SQL query builder)
 - JWT with Passport Authentication (Multiple strategies)
-  - Local login (email and password)
-  - Google OAuth
-  - Apple OAuth
+    - Local login (email and password)
+    - Google OAuth
+    - Apple OAuth
 
 ### Infrastructure
 
