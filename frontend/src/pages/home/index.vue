@@ -30,20 +30,21 @@
         </div>
       </div>
     </div>
+
+    <div class="pagination-wrapper">
+      <q-pagination
+        v-model="currentPage"
+        :max="pagesTotal"
+        active-color="gray"
+        active-design="unelevated"
+        active-text-color="white"
+        color="white"
+        direction-links
+        outline
+        size="lg"
+      />
+    </div>
   </q-page-container>
-  <div class="pagination-wrapper">
-    <q-pagination
-      v-model="currentPage"
-      :max="pagesTotal"
-      active-color="gray"
-      active-design="unelevated"
-      active-text-color="white"
-      color="white"
-      direction-links
-      outline
-      size="lg"
-    />
-  </div>
 </template>
 
 <script lang="ts">
