@@ -1,40 +1,42 @@
 import cors from 'cors'
 import express from 'express'
-import type { Request, Response } from 'express'
-import { connectToPostgres } from './postgres/index.js'
-import { ensureTableExists } from './seeder/index.js'
+import { connectToPostgres } from './postgres'
+import { appRoutes } from './routes'
+import { ensureTableExists } from './seeder'
+import { addDefaultBrands } from './seeder/brands'
+import { addDefaultProducts } from './seeder/products'
 
-console.log('Starting here==========')
-await connectToPostgres()
-await ensureTableExists()
+export class Backend {
+  constructor() {
+    this._app.use( cors() )
+    this._app.use( express.json() )
+    this._app.use( express.urlencoded( { extended: true } ) )
+    // this._app.use( logger )
+    this._app
+      .use( '/api', appRoutes )
+      .get( '/', ( req, res ) => {
+        res.json( {
+          message: 'Base Shop Product Catalog API is running',
+          version: '1.0.0',
+          documentation: '/api/docs',
+        } )
+      } )
+      .use( /(.*)/, ( req, res ) => {
+        res.status( 404 ).json( { error: 'Route not found' } )
+      } )
+  }
 
-const app = express()
+  private _app = express()
 
-app.use( cors() )
-app.use( express.json() )
-app.use( express.urlencoded( { extended: true } ) )
+  get app() {
+    return this._app
+  }
 
-app.get('/api/health', (req: Request, res: Response)=> {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    service: 'base-shop-product-catalog-api'
-  })
-})
-
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Base Shop Product Catalog API is running',
-    version: '1.0.0',
-    documentation: '/api/docs'
-  });
-});
-
-app.use(/(.*)/, (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
-
-
-export default app
-
-
+  async run() {
+    console.log( 'Starting here==========' )
+    await connectToPostgres()
+    await ensureTableExists()
+    await addDefaultBrands()
+    await addDefaultProducts()
+  }
+}
