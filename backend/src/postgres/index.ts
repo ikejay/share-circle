@@ -1,21 +1,9 @@
-import knexC, { Knex } from 'knex'
-import { types } from 'pg'
-import { builtins } from 'pg-types'
+import type { Knex } from 'knex'
+import knexC from 'knex'
+import { camelToSnakeCase } from '../helpers/converters'
 
 
 export let knex: Knex<any, unknown[]>
-
-types.setTypeParser( builtins.NUMERIC, ( val: any ) => {
-  return val ? parseFloat( val ) : null
-} )
-
-types.setTypeParser( builtins.INT8, ( val ) => {
-  return val ? parseInt( val ) : null
-} )
-
-types.setTypeParser( builtins.DATE, ( val ) => {
-  return val
-} )
 
 const connect = async ( config: any ) => {
   knex = knexC( {
@@ -43,6 +31,13 @@ export const connectToPostgres = async ( _schemaName = DEFAULT_SCHEMA_NAME ): Pr
       tableCatalog: schemaName,
     },
     debug: false,
+    wrapIdentifier: ( val: string, origImpl: ( val: string ) => string ) => {
+      if ( val === '*' ) {
+        return origImpl( val )
+      } else {
+        return camelToSnakeCase( val )
+      }
+    },
     searchPath: [ schemaName ],
   }
 
