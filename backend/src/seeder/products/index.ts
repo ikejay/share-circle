@@ -21,7 +21,6 @@ export const createTableProduct = async () => {
       table.string( 'status' ).notNullable()
     } )
 
-    await createTableIndex( tableNameProduct, [ 'id' ], true )
     await createTableIndex( tableNameProduct, [ 'product_code' ], true )
   }
 }
@@ -31,7 +30,7 @@ export const addDefaultProducts = async () => {
   const tableIsEmpty = await knex.schema.hasTable( tableNameProduct ) && ( await knex.select().from( tableNameProduct ) ).length === 0
 
   if ( tableIsEmpty ) {
-    Bluebird.each( brands, async brand => {
+    return Bluebird.each( brands, async brand => {
       return knex
         .insert( brand )
         .into( tableNameProduct )
