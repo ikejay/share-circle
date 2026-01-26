@@ -3,9 +3,10 @@ import { EnumBrandStatus, EnumProductStatus } from '../../../types-and-enums/enu
 import { snakeToCamelRecord } from '../../helpers/converters'
 import { knex } from '../../postgres'
 import { tableNameProduct } from '../../seeder/products'
-import { IPaging, IProduct, IProductResponse } from '../../types'
+import { IPaging, IProduct, IProductRecord, IProductResponse } from '../../types'
 import { Brand } from '../brand'
 
+const DOUBLICATE_KEY_ERROR = '23503'
 
 export class Product {
   constructor( protected id: number ) {
@@ -16,27 +17,27 @@ export class Product {
       throw new Error( 'PRODUCT NAME IS EMPTY' )
     }
 
-    if ( name.length > 35 ) {
-      throw new Error( 'PRODUCT NAME IS TOO LONG' )
-    }
-
     if ( brandId === 0 ) {
       throw new Error( 'INVALID BRAND ID' )
     }
 
+    const trimmedName = name = name.trim()
+
+    if ( name.length > 35 ) {
+      throw new Error( 'PRODUCT NAME IS TOO LONG' )
+    }
 
     try {
-      const trimmedName = name = name.trim()
       const [ { id } ] = await knex( tableNameProduct ).insert( { trimmedName, brandId }, [ 'id' ] )
 
       return new Product( id ).get()
 
     } catch ( err: any ) {
-      if ( err.code === '23503' ) {
+      if ( err.code === DOUBLICATE_KEY_ERROR ) {
         throw new Error( 'FAILED TO CREATE PRODUCT' )
       }
 
-      throw new Error( 'BRAND DOES NOT EXIST' )
+      throw err
     }
   }
 
@@ -61,12 +62,11 @@ export class Product {
       }
     } ) as IProduct[]
 
-    const numberOfProducts = await knex( tableNameProduct ).where( 'status', EnumProductStatus.ACTIVE ).count<{
-      count: string
-    }[]>( '* as count' )
+    const numberOfProducts = await knex( tableNameProduct )
+      .count<{ count: number }[]>( '* as count' )
+      .where( 'status', EnumProductStatus.ACTIVE )
 
-    const totalCount = Number( numberOfProducts[ 0 ].count )
-
+    const totalCount = numberOfProducts[ 0 ].count
 
     return {
       list,
@@ -75,32 +75,25 @@ export class Product {
     }
   }
 
-
   static async getProductById( id: number ) {
-    const record = await knex.queryBuilder()
+    const records: IProductRecord[] = await knex.queryBuilder()
       .select()
       .from( tableNameProduct )
       .where( 'id', id )
-      .limit( 1 )
 
-    if ( record.length === 0 ) {
+    if ( records.length === 0 ) {
       throw new Error( 'PRODUCT DOES NOT EXIST' )
     }
 
-    const product = await Bluebird.mapSeries( record.map( snakeToCamelRecord ), async ( product: any ) => {
-      const brandId = product.brandId
-      delete product.brandId
+    const product = snakeToCamelRecord( records[ 0 ] )
 
-      return {
-        ...product,
-        brand: await Brand.getById( brandId ),
-      }
-    } ) as IProduct[]
+    product.brand = await Brand.getById( product.brandId )
+    delete product.brandId
 
-    return product[ 0 ]
+    return product as IProduct
   }
 
-  async get(): Promise<IProduct> {
+  protected async get(): Promise<IProduct> {
     const records = await knex.queryBuilder().select().from( tableNameProduct ).where( { id: this.id } )
 
     if ( records.length === 0 ) {

@@ -1,9 +1,10 @@
+import { logger } from '../../logger'
 import { knex } from '../../postgres'
 import { tableNameBrands } from '../../seeder/brands'
 import { IBrand } from '../../types'
 
 export class Brand {
-  constructor( protected id: number ) {
+  constructor( protected readonly id: number ) {
   }
 
   static async create( name: string ): Promise<IBrand> {
@@ -11,33 +12,37 @@ export class Brand {
       throw new Error( 'BRAND NAME IS EMPTY' )
     }
 
+    name = name.trimEnd().trimStart()
+
     if ( name.length > 35 ) {
       throw new Error( 'BRAND NAME IS TOO LONG' )
     }
 
-
     try {
-      name = name.trimEnd().trimStart()
       const [ { id } ] = await knex( tableNameBrands ).insert( { name }, [ 'id' ] )
 
       return new Brand( id ).get()
 
     } catch ( err ) {
-      console.log( err )
+      logger( err )
 
       throw new Error( 'FAILED TO CREATE BRAND' )
     }
   }
 
-
+  // TODO: what if "id" doesn't exist in db?
   static async getById( id: number ): Promise<IBrand> {
-    const brand = await knex
+    const brands = await knex
       .queryBuilder()
       .select()
       .from( tableNameBrands )
       .where( 'id', id )
 
-    return brand[ 0 ]
+    if ( brands.length === 0 ) {
+      throw new Error( 'BRAND NOT FOUND' )
+    }
+
+    return brands[ 0 ]
   }
 
 
@@ -45,7 +50,7 @@ export class Brand {
     const records = await knex.queryBuilder().select().from( tableNameBrands ).where( { id: this.id } )
 
     if ( records.length === 0 ) {
-      throw new Error( 'FAILED TO CREATE BRAND' )
+      throw new Error( 'RECORD NOT FOUND' )
     }
 
     return records[ 0 ]

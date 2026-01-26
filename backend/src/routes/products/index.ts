@@ -21,6 +21,7 @@ const getById = async ( req: Request, res: Response ) => {
   try {
     const item = await Product.getProductById( id )
     res.send( item )
+
   } catch ( e ) {
     console.log( e )
     res.status( 500 ).send( 'An error occured' )

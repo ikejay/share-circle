@@ -1,4 +1,4 @@
-import type { RouteRecordRaw } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -7,13 +7,13 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        component: () => import('../pages/home/index.vue')
+        component: () => import('pages/home/index.vue'),
       },
       {
         name: 'product-detail',
         path: '/product/:id',
-        component: () => import('../pages/product-details/index.vue')
-      }
+        component: () => import('pages/product-details/index.vue'),
+      },
     ],
   },
 
@@ -23,6 +23,6 @@ const routes: RouteRecordRaw[] = [
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),
   },
-];
+]
 
-export default routes;
+export default routes

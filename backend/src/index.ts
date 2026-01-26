@@ -12,7 +12,7 @@ import { Backend } from './app'
     console.log( `Health check: http://localhost:${ PORT }/api/health` )
   } )
 
-// Graceful shutdown
+  // Graceful shutdown
   process.on( 'SIGTERM', () => {
     console.log( 'SIGTERM signal received: closing HTTP server' )
     server.close( () => {

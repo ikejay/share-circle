@@ -27,25 +27,27 @@ export const useProductStore = defineStore( 'Product', {
   actions: {
     async loadPage( page: number ) {
       this.loadingState = EnumLoadingState.LOADING
-      await ProductApi.loadPage( {
-        page,
-        itemsPerPage: 9,
-      } ).then( ( response ) => {
-        this.loadingState = EnumLoadingState.LOADED
-        this.response = response
-      } ).catch( ( error: any ) => {
-        this.loadingState = EnumLoadingState.ERROR
-        console.log( error )
-      } )
+
+      await ProductApi.loadPage( { page, itemsPerPage: 9 } )
+        .then( ( response ) => {
+          this.loadingState = EnumLoadingState.LOADED
+          this.response = response
+        } )
+        .catch( ( error: any ) => {
+          this.loadingState = EnumLoadingState.ERROR
+          console.log( error )
+        } )
     },
 
     async loadProductById( id: number ) {
       this.loadingState = EnumLoadingState.LOADING
+
       await ProductApi.loadById( id )
         .then( ( response ) => {
           this.loadingState = EnumLoadingState.LOADED
           this.product = response
-        } ).catch( ( error: any ) => {
+        } )
+        .catch( ( error: any ) => {
           this.loadingState = EnumLoadingState.ERROR
           console.log( error )
         } )
@@ -54,12 +56,14 @@ export const useProductStore = defineStore( 'Product', {
 
   getters: {
     getPage: ( state: IState ) => state.response,
-    getProduct: (state: IState)=> state.product,
+    getProduct: ( state: IState ) => state.product,
     getNumberOfPages: ( state: IState ) => {
       const { totalCount, paging } = state.response
 
-      console.log( 'Total count here', totalCount )
-      if ( ! paging.itemsPerPage ) return 0
+      if ( ! paging.itemsPerPage ) {
+        return 0
+      }
+
       return Math.ceil( totalCount / paging.itemsPerPage )
     },
   },

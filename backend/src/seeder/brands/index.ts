@@ -39,7 +39,6 @@ export const createTableBrand = async () => {
       table.string( 'status' ).nullable().defaultTo( EnumBrandStatus.INACTIVE )
     } )
 
-    await createTableIndex( tableNameBrands, [ 'id' ], true )
     await createTableIndex( tableNameBrands, [ 'name' ], true )
   }
 }
@@ -48,7 +47,7 @@ export const addDefaultBrands = async () => {
   const tableIsEmpty = await knex.schema.hasTable( tableNameBrands ) && ( await knex.select().from( tableNameBrands ) ).length === 0
 
   if ( tableIsEmpty ) {
-    Bluebird.each( brands, async brand => {
+    return Bluebird.each( brands, async brand => {
       return knex
         .insert( brand )
         .into( tableNameBrands )
