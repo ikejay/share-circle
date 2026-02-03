@@ -1,5 +1,5 @@
 import Bluebird from 'bluebird'
-import { brands } from '../../dummy'
+import { products } from '../../dummy'
 import { knex } from '../../postgres'
 import { createTableIndex } from '../../postgres/create-unique-index'
 
@@ -30,7 +30,7 @@ export const addDefaultProducts = async () => {
   const tableIsEmpty = await knex.schema.hasTable( tableNameProduct ) && ( await knex.select().from( tableNameProduct ) ).length === 0
 
   if ( tableIsEmpty ) {
-    return Bluebird.each( brands, async brand => {
+    return Bluebird.each( products, async brand => {
       return knex
         .insert( brand )
         .into( tableNameProduct )

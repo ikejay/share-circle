@@ -1,25 +1,26 @@
+import { EnumBrandStatus, EnumProductStatus } from '../../../types-and-enums/enums'
 import { logger } from '../../logger'
 import { knex } from '../../postgres'
 import { tableNameBrands } from '../../seeder/brands'
-import { IBrand } from '../../types'
+import { IBrand, IBrandResponse, IPaging } from '../../types'
 
 export class Brand {
   constructor( protected readonly id: number ) {
   }
 
-  static async create( name: string ): Promise<IBrand> {
-    if ( name.length === 0 ) {
+  static async create( brand: Omit<IBrand, 'id'> ): Promise<IBrand> {
+    if ( brand.name.length === 0 ) {
       throw new Error( 'BRAND NAME IS EMPTY' )
     }
 
-    name = name.trimEnd().trimStart()
+    brand.name = brand.name.trimEnd().trimStart()
 
-    if ( name.length > 35 ) {
+    if ( brand.name.length > 35 ) {
       throw new Error( 'BRAND NAME IS TOO LONG' )
     }
 
     try {
-      const [ { id } ] = await knex( tableNameBrands ).insert( { name }, [ 'id' ] )
+      const [ { id } ] = await knex( tableNameBrands ).insert( brand, [ 'id' ] )
 
       return new Brand( id ).get()
 
@@ -30,19 +31,75 @@ export class Brand {
     }
   }
 
-  // TODO: what if "id" doesn't exist in db?
+
+  static async update( brandId: number, updatedData: Omit<IBrand, 'id'> ) {
+    if ( ! updatedData ) {
+      throw new Error( 'BRAND DETAILS ARE EMPTY' )
+    }
+
+    if ( updatedData.name.length === 0 ) {
+      throw new Error( 'BRAND NAME IS EMPTY' )
+    }
+
+    updatedData.name = updatedData.name.trimEnd().trimStart()
+
+    if ( updatedData.name.length > 35 ) {
+      throw new Error( 'BRAND NAME IS TOO LONG' )
+    }
+
+    try {
+      const [ { id } ] = await knex( tableNameBrands )
+        .update( updatedData, [ 'id' ] )
+        .where( { id: brandId } )
+
+      return new Brand( id ).get()
+
+    } catch ( err ) {
+      logger( err )
+    }
+  }
+
+  // TODO Implement delete logic of deprecation(Soft Delete)
+  static async delete(){
+
+  }
+
+  static async getPage( paging: IPaging ): Promise<IBrandResponse> {
+    const offset = ( paging.page - 1 ) * paging.itemsPerPage
+
+    const list = await knex.queryBuilder()
+      .select()
+      .from( tableNameBrands )
+      .orderBy( 'id' )
+      .offset( offset )
+      .limit( paging.itemsPerPage )
+
+    const numberOfBrands = await knex( tableNameBrands )
+      .count<{ count: number }[]>( '* as count' )
+      .where( 'status', EnumProductStatus.ACTIVE )
+
+    const totalCount = numberOfBrands[ 0 ].count
+
+    return {
+      list,
+      totalCount,
+      paging,
+    }
+  }
+
   static async getById( id: number ): Promise<IBrand> {
-    const brands = await knex
+    const brand = await knex
       .queryBuilder()
       .select()
       .from( tableNameBrands )
       .where( 'id', id )
+      .first()
 
-    if ( brands.length === 0 ) {
+    if ( ! brand ) {
       throw new Error( 'BRAND NOT FOUND' )
     }
 
-    return brands[ 0 ]
+    return brand
   }
 
 

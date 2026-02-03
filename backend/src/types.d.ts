@@ -1,3 +1,5 @@
+import { EnumUserStatus } from '../types-and-enums/enums'
+
 export interface IProduct {
   id: number
   name: string
@@ -22,10 +24,63 @@ export interface IProductRecord {
   status: string
 }
 
+export interface IPermissionRecord {
+  id: number
+  value: string
+  name: string
+}
+
+export interface IUserPermissionRecord {
+  id: number
+  userId: number
+  permissionId: number
+}
+
+
+export interface IRecordUser {
+  id: number
+  firstName: string
+  lastName: string
+  email: string
+  accountId: string
+  identityProviderId: number
+  phone: string | null
+  status: EnumUserStatus
+  postalAddressId: number | null
+  isAdmin: boolean
+}
+
+export interface IUserPostalAddressRecord {
+  id: number
+  postalCode: string
+}
+
+interface IUser {
+  id: number
+  accountId: string
+  firstName: string
+  lastName: string
+  email: string
+  identityProvider: IIdentityProviderRecord
+  userPermissions: IUserPermission[]
+  status: EnumUserStatus
+  isAdmin: boolean
+}
+
+
+export interface IIdentityProvider {
+  name: string
+}
+
+export interface IIdentityProviderRecord {
+  id: number
+  name: string
+}
 
 export interface IBrand {
   id: number
   name: string
+  logoUrl: string | null
   status: string
 }
 
@@ -48,6 +103,12 @@ export interface IPaging {
 
 export interface IProductResponse {
   list: IProduct[]
+  totalCount: number
+  paging: IPaging
+}
+
+export interface IBrandResponse {
+  list: IBrand[]
   totalCount: number
   paging: IPaging
 }

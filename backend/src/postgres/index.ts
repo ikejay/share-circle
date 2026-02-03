@@ -1,9 +1,12 @@
 import type { Knex } from 'knex'
 import knexC from 'knex'
+import { Pool, PoolConfig } from 'pg'
 import { camelToSnakeCase } from '../helpers/converters'
 
 
 export let knex: Knex<any, unknown[]>
+
+export let pool: Pool
 
 const connect = async ( config: any ) => {
   knex = knexC( {
@@ -16,11 +19,18 @@ const connect = async ( config: any ) => {
 }
 
 const DEFAULT_SCHEMA_NAME = 'shop_db'
-export let schemaName = DEFAULT_SCHEMA_NAME
+const SESSION_SCHEMA_NAME = 'user_sessions'
 
-export const connectToPostgres = async ( _schemaName = DEFAULT_SCHEMA_NAME ): Promise<any> => {
+export let schemaName = DEFAULT_SCHEMA_NAME
+export let sessionsSchemaName = SESSION_SCHEMA_NAME
+
+export const connectToPostgres = async (
+  _schemaName = DEFAULT_SCHEMA_NAME,
+  _sessionsSchemaName = SESSION_SCHEMA_NAME,
+): Promise<any> => {
   schemaName = _schemaName
-  const { DB_HOST, DB_USER, DB_PASSWORD } = process.env
+  sessionsSchemaName = _sessionsSchemaName
+  const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = process.env
 
   const postgresConnectionConfig = {
     client: 'pg',
@@ -41,7 +51,24 @@ export const connectToPostgres = async ( _schemaName = DEFAULT_SCHEMA_NAME ): Pr
     searchPath: [ schemaName ],
   }
 
+  const poolConfig: PoolConfig = {
+    host: DB_HOST,
+    user: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_NAME || 'postgres',
+    port: 5432,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 20000,
+  }
+
+
+  pool = new Pool( poolConfig )
+
   await connect( postgresConnectionConfig )
 
-  return knex.raw( `CREATE SCHEMA IF NOT EXISTS ${ schemaName }` )
+  await knex.raw( `CREATE SCHEMA IF NOT EXISTS ${ schemaName }` )
+  await knex.raw( `CREATE SCHEMA IF NOT EXISTS ${ sessionsSchemaName }` )
+
+  return pool
 }

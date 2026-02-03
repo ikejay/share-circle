@@ -1,7 +1,7 @@
 import { EnumBrandStatus } from '../../types-and-enums/enums'
 import { IProductRecord } from '../types'
 
-export const brands: Omit<IProductRecord, 'id'>[] = [
+export const products: Omit<IProductRecord, 'id'>[] = [
   {
     name: 'Drucker',
     productCode: 'DR21',

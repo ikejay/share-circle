@@ -8,22 +8,27 @@ const brands: Omit<IBrand, 'id'>[] = [
   {
     name: 'GERMANCHEF',
     status: EnumBrandStatus.ACTIVE,
+    logoUrl: null
   },
   {
     name: 'AKAI',
     status: EnumBrandStatus.ACTIVE,
+    logoUrl: null
   },
   {
     name: 'MIELE',
     status: EnumBrandStatus.ACTIVE,
+    logoUrl: null
   },
   {
     name: 'BRUHM',
     status: EnumBrandStatus.ACTIVE,
+    logoUrl: null
   },
   {
     name: 'KLARSTEIN',
     status: EnumBrandStatus.ACTIVE,
+    logoUrl: null
   },
 ]
 
@@ -36,6 +41,7 @@ export const createTableBrand = async () => {
       table.timestamps( true, true )
 
       table.string( 'name' ).notNullable()
+      table.string( 'logo_url', 2048 ).nullable().defaultTo( null )
       table.string( 'status' ).nullable().defaultTo( EnumBrandStatus.INACTIVE )
     } )
 
