@@ -1,3 +1,5 @@
+import { EnumUserStatus } from './enums'
+
 export interface IProduct {
   id: number
   name: string
@@ -20,6 +22,16 @@ export interface IProductRecord {
   stockQuantity: number
   brandId: number
   status: string
+}
+
+interface IRecordUser {
+  id: number
+  accountId: string
+  firstName: string
+  lastName: string
+  email: string
+  status: EnumUserStatus
+  isAdmin: boolean
 }
 
 

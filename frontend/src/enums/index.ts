@@ -4,3 +4,9 @@ export enum EnumLoadingState {
   INITIAL = 'INITIAL',
   ERROR = 'ERROR'
 }
+
+
+export enum EnumUserStatus {
+  VERIFIED = 'VERIFIED',
+  UNVERIFIED = 'UNVERIFIED'
+}
