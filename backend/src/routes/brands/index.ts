@@ -24,9 +24,17 @@ const createCb = async ( req: Request, res: Response ) => {
   }
 }
 
-// TODO Implement callback function for single and bulk delete(soft delete)
-const deleteCb = () => {
+const deleteCb = async ( req: Request, res: Response ) => {
+  const id: number = parseInt( req.params.id as string )
 
+  try {
+    const deprecatedOrDeletedBrand = await Brand.deleteById( id )
+
+    res.status( 200 ).json( deprecatedOrDeletedBrand )
+  } catch ( err: any ) {
+    console.error( err )
+    res.status( 500 ).send( err.message )
+  }
 }
 
 const updateCb = async ( req: Request, res: Response ) => {
@@ -40,7 +48,23 @@ const updateCb = async ( req: Request, res: Response ) => {
       .json( brand )
   } catch ( err: any ) {
     console.error( err )
-    res.status( 500 ).send( 'An error occured' )
+    res.status( 500 ).send( err.message )
+  }
+}
+
+const bulkDeleteCb = async ( req: Request, res: Response ) => {
+  const { ids } = req.body
+
+  if ( ! Array.isArray( ids ) || ids.length === 0 ) {
+    return res.status( 400 ).send( 'NO IDs provided' )
+  }
+
+  try {
+    const deletedAndDeprecatedBrands = await Brand.deleteMany( ids )
+    res.status( 200 ).json( deletedAndDeprecatedBrands )
+  } catch ( err: any ) {
+    console.error( err )
+    res.status( 500 ).send( err.message )
   }
 }
 
@@ -75,3 +99,5 @@ export const brandRoutes = Router()
   .get( '/:id', getById )
   .post( '/create', createUploader( 'brand_logos' ).single( 'logoUrl' ), createCb )
   .put( '/:id', updateCb )
+  .delete( '/bulk-delete', bulkDeleteCb )
+  .delete( '/:id', deleteCb )

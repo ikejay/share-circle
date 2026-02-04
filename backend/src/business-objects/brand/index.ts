@@ -3,6 +3,7 @@ import { logger } from '../../logger'
 import { knex } from '../../postgres'
 import { tableNameBrands } from '../../seeder/brands'
 import { IBrand, IBrandResponse, IPaging } from '../../types'
+import { Product } from '../product'
 
 export class Brand {
   constructor( protected readonly id: number ) {
@@ -59,9 +60,77 @@ export class Brand {
     }
   }
 
-  // TODO Implement delete logic of deprecation(Soft Delete)
-  static async delete(){
+  static async deleteMany( ids: number[] ) {
+    if ( ids.length === 0 ) {
+      throw new Error( 'NO IDs HAVE BEEN PROVIDED' )
+    }
 
+    try {
+      const linkedBrandIds: string[] = await Product.getBrandIdsLinkedToProducts( ids )
+
+      const deprecatedIds = linkedBrandIds.map( ( id ) => Number( id ) )
+      const deletedIds = ids.filter( id => ! deprecatedIds.includes( id ) )
+
+      if ( deprecatedIds.length > 0 ) {
+        await knex.queryBuilder()
+          .select()
+          .from( tableNameBrands )
+          .whereIn( 'id', deprecatedIds )
+          .update( {
+            status: EnumBrandStatus.DEPRECATED,
+          } )
+      }
+
+      if ( deletedIds.length > 0 ) {
+        await knex.queryBuilder()
+          .select()
+          .from( tableNameBrands )
+          .whereIn( 'id', deletedIds )
+          .del()
+      }
+
+      return {
+        deletedIds,
+        deprecatedIds,
+      }
+    } catch ( err: any ) {
+      logger( err )
+    }
+  }
+
+  static async deleteById( id: number ) {
+    if ( ! id ) {
+      throw new Error( 'NO ID HAVE BEEN PROVIDED' )
+    }
+
+    try {
+      const linkedBrandIds: string[] = await Product.getBrandIdsLinkedToProducts( [ id ] )
+      const isLinkedToProduct = linkedBrandIds.length !== 0
+
+      if ( isLinkedToProduct ) {
+        await knex.queryBuilder()
+          .select()
+          .from( tableNameBrands )
+          .where( 'id', Number( linkedBrandIds[ 0 ] ) )
+          .update( {
+            status: EnumBrandStatus.DEPRECATED,
+          } )
+      } else {
+        await knex.queryBuilder()
+          .select()
+          .from( tableNameBrands )
+          .where( { id } )
+          .del()
+      }
+
+      return {
+        deletedId: id,
+        deleted: ! isLinkedToProduct
+      }
+
+    } catch ( err: any ) {
+      logger( err )
+    }
   }
 
   static async getPage( paging: IPaging ): Promise<IBrandResponse> {

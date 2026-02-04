@@ -3,7 +3,8 @@ export enum EnumBrandStatus {
   INACTIVE = 'INACTIVE',
   PENDING = 'PENDING',
   ARCHIVED = 'ARCHIVED',
-  BLOCKED = 'BLOCKED'
+  BLOCKED = 'BLOCKED',
+  DEPRECATED = 'DEPRECATED'
 }
 
 export enum EnumProductStatus {

@@ -41,6 +41,22 @@ export class Product {
     }
   }
 
+  static async getBrandIdsLinkedToProducts( ids: number[] ) {
+    if ( ids.length === 0 ) {
+      throw new Error( 'NO IDs HAVE BEEN PROVIDED' )
+    }
+    try {
+      return await knex.queryBuilder()
+        .select()
+        .from( tableNameProduct )
+        .whereIn( 'brand_id', ids )
+        .distinct( 'brand_id' )
+        .pluck( 'brand_id' )
+    } catch ( err: any ) {
+      throw err
+    }
+  }
+
   static async getPage( paging: IPaging ): Promise<IProductResponse> {
     const offset = ( paging.page - 1 ) * paging.itemsPerPage
 
