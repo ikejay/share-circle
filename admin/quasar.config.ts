@@ -112,8 +112,8 @@ export default defineConfig( ( ctx ) => {
           timeout: 2500,
           textColor: '',
           color: 'blue',
-          actions: [{icon: 'close', color: 'white'}]
-        }
+          actions: [ { icon: 'close', color: 'white' } ],
+        },
       },
 
       // iconSet: 'material-icons', // Quasar icon set
@@ -128,7 +128,8 @@ export default defineConfig( ( ctx ) => {
 
       // Quasar plugins
       plugins: [
-        'Notify'
+        'Dialog',
+        'Notify',
       ],
     },
 

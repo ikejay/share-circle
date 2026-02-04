@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
 import { BrandApi } from '../../api/brand'
-import { EnumLoadingState } from '../../enums'
+import { EnumBrandStatus, EnumLoadingState } from '../../enums'
 import { IBrand, IProductResponse } from '../../types'
 
 interface IState {
   response: IProductResponse,
   loadingState: EnumLoadingState
+  selectedBrands: IBrand[]
   brand: IBrand
 }
 
@@ -20,6 +21,7 @@ export const useBrandStore = defineStore( 'Brand', {
       },
     },
     loadingState: EnumLoadingState.INITIAL,
+    selectedBrands: [],
     brand: null,
   } ),
 
@@ -39,9 +41,64 @@ export const useBrandStore = defineStore( 'Brand', {
         } )
     },
 
-    // TODO Implement delete logic of deprecation(Soft Delete)
-    async deleteBrand(){
+    async deleteBrandById( id: number ) {
+      this.loadingState = EnumLoadingState.LOADING
 
+      try {
+        const { deleted, deletedId } = await BrandApi.deleteById( id )
+        this.loadingState = EnumLoadingState.LOADED
+
+        if ( deleted ) {
+          this.response.list = this.response.list.filter( ( brand: IBrand ) => brand.id !== deletedId )
+        } else {
+          this.response.list = this.response.list.map( ( brand: IBrand ) => {
+            if ( deletedId === brand.id ) {
+              return {
+                ...brand,
+                status: EnumBrandStatus.DEPRECATED,
+              }
+            }
+            return brand
+          } )
+        }
+
+
+      } catch ( err ) {
+        this.loadingState = EnumLoadingState.ERROR
+        throw err
+      }
+    },
+
+    async bulkDelete( brandIds: number[] ) {
+      this.loadingState = EnumLoadingState.LOADING
+
+      try {
+        const { deletedIds, deprecatedIds } = await BrandApi.deleteBrandBulk( brandIds )
+
+        if ( deletedIds.length > 0 ) {
+          this.response.list = this.response.list.filter( ( brand: IBrand ) => ! deletedIds.includes( brand.id ) )
+        }
+
+        if ( deprecatedIds.length > 0 ) {
+          this.response.list = this.response.list.map( ( brand: IBrand ) => {
+            if ( deprecatedIds.includes( brand.id ) ) {
+              return {
+                ...brand,
+                status: EnumBrandStatus.DEPRECATED,
+              }
+            }
+            return brand
+          } )
+        }
+        this.loadingState = EnumLoadingState.LOADED
+        return {
+          deletedCount: deletedIds.length,
+          deprecatedCount: deprecatedIds.length,
+        }
+      } catch ( err: any ) {
+        this.loadingState = EnumLoadingState.ERROR
+        throw err
+      }
     },
 
     async createBrand( brand: Omit<IBrand, 'id'> ) {

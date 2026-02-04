@@ -79,6 +79,16 @@ interface IRecordUser {
   isAdmin: boolean
 }
 
+interface IBulkDeleteResponse {
+  deletedIds: number[];
+  deprecatedIds: number[];
+}
+
+interface IDeleteResponse {
+  deletedId: number;
+  deleted: boolean;
+}
+
 
 export interface IBrand {
   id: number

@@ -93,7 +93,7 @@ export default defineComponent( {
       brand: {
         name: null,
         logoUrl: null,
-        status: EnumBrandStatus.INACTIVE,
+        status: null,
       },
     }
   },
@@ -158,7 +158,3 @@ export default defineComponent( {
 } )
 </script>
 
-
-<style lang="sass" scoped>
-
-</style>

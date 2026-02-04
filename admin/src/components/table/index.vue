@@ -1,89 +1,60 @@
 <template>
   <q-table
-    v-model:selected="selectedBrands"
     :columns="columns"
     :pagination="initialPagination"
     :rows="rows"
+    :selected="selected"
     :title="title"
     bordered
     flat
     row-key="id"
-    selec
     selection="multiple"
+    v-bind="$attrs"
+    @update:selected="(val: IBrand) => $emit('update:selected', val)"
   >
     <template v-slot:top-right>
       <q-btn
-        :label="`Add ${title}`"
+        :disable="isBrandSelected"
         color="primary"
         icon="add"
         @click="$emit('add')"
-      />
+      >
+        Add {{ title }}
+        <q-tooltip v-if="isBrandSelected" :offset="[10, 10]" class="bg-grey-7">
+          Can't use when {{ title }} selected
+        </q-tooltip>
+      </q-btn>
       <q-btn
-        v-if="selectedBrands.length > 0"
-        label="Bulk Delete"
+        v-if="isBrandSelected"
+        class="q-ml-lg"
         color="red"
         icon="delete"
-        @click="$emit('delete', selectedBrands)"
+        label="Bulk Delete"
+        @click="$emit('delete:bulk', selected)"
       />
     </template>
 
     <template v-slot:body-cell-actions="props">
       <q-td :props="props" class="q-gutter-x-sm">
         <q-btn
+          class="q-ml-none q-pl-none"
           color="primary"
+          flat
           icon="edit"
           @click="$emit('edit', props.row)"
+        />
+        <q-btn
+          class="q-ml-none"
+          color="red"
+          flat
+          icon="delete"
+          @click="$emit('delete', props.row)"
         />
       </q-td>
     </template>
 
     <template v-for="(_, slot) in $slots" v-slot:[slot]="scope">
       <slot :name="slot" v-bind="scope"/>
-    </template>
-
-    <template v-slot:pagination="scope">
-      <q-btn
-        v-if="scope.pagesNumber > 2"
-        :disable="scope.isFirstPage"
-        color="grey-8"
-        dense
-        flat
-        icon="first_page"
-        round
-        @click="scope.firstPage"
-      />
-
-      <q-btn
-        :disable="scope.isFirstPage"
-        color="grey-8"
-        dense
-        flat
-        icon="chevron_left"
-        round
-        @click="scope.prevPage"
-      />
-
-      <q-btn
-        :disable="scope.isLastPage"
-        color="grey-8"
-        dense
-        flat
-        icon="chevron_right"
-        round
-        @click="scope.nextPage"
-      />
-
-      <q-btn
-        v-if="scope.pagesNumber > 2"
-        :disable="scope.isLastPage"
-        color="grey-8"
-        dense
-        flat
-        icon="last_page"
-        round
-        @click="scope.lastPage"
-      />
-      {{selectedBrands}}
     </template>
   </q-table>
 </template>
@@ -92,10 +63,6 @@
 import { QTableColumn } from 'quasar'
 import { defineComponent, PropType } from 'vue'
 import { IBrand } from '../../types'
-
-interface IData {
-  selectedBrands: IBrand[]
-}
 
 export default defineComponent( {
   computed: {
@@ -106,18 +73,19 @@ export default defineComponent( {
         sortBy: 'lastUpdatedAt',
       }
     },
+    isBrandSelected() {
+      return this.selected.length > 0
+    },
   },
 
-  data(): IData {
-    return {
-      selectedBrands: [],
-    }
-  },
-
-  emits: [ 'add', 'edit', 'delete' ],
+  emits: [ 'add', 'edit', 'delete:bulk', 'delete', 'update:selected' ],
 
   name: 'AdminTable',
   props: {
+    selected: {
+      type: Array as PropType<IBrand[]>,
+      default: () => [],
+    },
     title: {
       type: String,
       required: true,

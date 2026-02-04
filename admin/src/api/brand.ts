@@ -1,5 +1,5 @@
 import { api } from 'boot/axios'
-import { IBrand, IPaging } from 'src/types'
+import { IBrand, IBulkDeleteResponse, IDeleteResponse, IPaging } from 'src/types'
 
 const baseUrl = '/brands'
 
@@ -24,8 +24,16 @@ export class BrandApi {
     return data
   }
 
-  // TODO Implement delete method for both bulk and  single delete
-  static async deleteBrand(){
+  static async deleteBrandBulk( ids: number[] ): Promise<IBulkDeleteResponse> {
+    const { data } = await api.delete( `${ baseUrl }/bulk-delete`, {
+      data: { ids },
+    } )
 
+    return data
+  }
+
+  static async deleteById( id: number ): Promise<IDeleteResponse> {
+    const { data } = await api.delete( `${ baseUrl }/${ id }` )
+    return data
   }
 }
