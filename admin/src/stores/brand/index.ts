@@ -41,6 +41,16 @@ export const useBrandStore = defineStore( 'Brand', {
         } )
     },
 
+    async loadAll() {
+      this.loadingState = EnumLoadingState.LOADING
+      try {
+        this.response.list = await BrandApi.loadAll()
+        this.loadingState = EnumLoadingState.LOADED
+      } catch ( error ) {
+        this.loadingState = EnumLoadingState.ERROR
+      }
+    },
+
     async deleteBrandById( id: number ) {
       this.loadingState = EnumLoadingState.LOADING
 
@@ -148,7 +158,7 @@ export const useBrandStore = defineStore( 'Brand', {
   },
 
   getters: {
-    getPage: ( state: IState ) => state.response,
+    currentPage: ( state: IState ) => state.response,
     getBrand: ( state: IState ) => state.brand,
     getNumberOfPages: ( state: IState ) => {
       const { totalCount, paging } = state.response

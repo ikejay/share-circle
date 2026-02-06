@@ -5,12 +5,16 @@
       :name="icon"
       :size="iconSize"
     />
+
     <div>
       {{ label }}
       <span v-if="subTitle" class="text-body2">{{ subTitle }}</span>
     </div>
+
     <q-space/>
+
     <slot name="other"></slot>
+
     <q-btn
       dense
       flat
@@ -25,12 +29,15 @@ import { defineComponent } from 'vue'
 
 export default defineComponent( {
   defineEmits: [ 'close' ],
+
   methods: {
     close() {
       this.$emit( 'close' )
     },
   },
+
   name: 'DialogHeader',
+
   props: {
     icon: {
       type: String,
@@ -63,7 +70,3 @@ export default defineComponent( {
   },
 } )
 </script>
-
-<style lang="sass" scoped>
-
-</style>

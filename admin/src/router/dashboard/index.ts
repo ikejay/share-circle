@@ -2,11 +2,14 @@ export const dashboardRoutes = [
   {
     name: 'dashboard',
     path: '/',
+    meta: {
+      requireAuth: true,
+    },
     children: [
       {
         name: 'home',
         path: 'dashboard',
-        component: () => import('../../pages/dashboard/home/index.vue')
+        component: () => import('../../pages/dashboard/home/index.vue'),
       },
       {
         name: 'brands',

@@ -1,6 +1,13 @@
+import { QTableColumn } from 'quasar'
 import { IProduct } from '../../../types'
 
-export const columns = [
+export const columns: QTableColumn[] = [
+  {
+    name: 'actions',
+    label: 'Actions',
+    field: 'actions',
+    align: 'left',
+  },
   {
     name: 'name',
     required: true,
@@ -35,11 +42,5 @@ export const columns = [
     label: 'Status',
     align: 'left',
     field: ( row: IProduct ) => row.status,
-  },
-  {
-    name: 'actions',
-    label: 'Actions',
-    field: 'actions',
-    align: 'center',
   },
 ]

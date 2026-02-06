@@ -1,6 +1,6 @@
 <template>
   <q-dialog
-    :model-value="showDialog"
+    :model-value="true"
     persistent
     @escape-key="close"
   >
@@ -112,13 +112,13 @@ export default defineComponent( {
 
       if ( form && await form.validate() ) {
 
-        if ( this.editData ) {
-          await this.BrandStore.updateBrand( this.editData.id, this.brand )
+        if ( this.existingBrand ) {
+          await this.BrandStore.updateBrand( this.existingBrand.id, this.brand )
         } else {
           await this.BrandStore.createBrand(
             {
               ...this.brand,
-              status: this.editData ? this.brand.status : EnumBrandStatus.ACTIVE,
+              status: this.existingBrand ? this.brand.status : EnumBrandStatus.ACTIVE,
             },
           )
         }
@@ -126,32 +126,27 @@ export default defineComponent( {
       }
     },
   },
+
   name: 'BrandDialog',
+
   props: {
-    showDialog: {
-      type: Boolean,
-      default: false,
-    },
-    editData: {
+    existingBrand: {
       type: Object as PropType<IBrand | null>,
       default: null,
     },
   },
 
   watch: {
-    editData: {
-      handler( val: IBrand | null ) {
-        if ( val ) {
-          this.brand = {
-            name: val.name,
-            status: val.status,
-            logoUrl: null,
-          }
-        } else {
-          this.resetForm()
-        }
-      },
-      immediate: true,
+    existingBrand( val: IBrand | null ) {
+      if ( ! val ) {
+        return this.resetForm()
+      }
+
+      this.brand = {
+        name: val.name,
+        status: val.status,
+        logoUrl: null,
+      }
     },
   },
 

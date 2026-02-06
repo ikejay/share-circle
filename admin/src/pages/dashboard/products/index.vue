@@ -1,29 +1,61 @@
 <template>
   <q-page-container class="q-pa-md">
     <admin-table
+      v-model:selected="selectedProducts"
       :columns="columns"
-      :rows="products"
+      :enable-save-btn="hasChanged"
+      :rows="workingCopyProducts"
+      :show-bulk-edit="true"
       title="Products"
+      @add="add"
+      @close="close"
+      @edit="edit"
+      @save="save"
+      @set-value="setValue"
+    />
+
+    <product-dialog
+      :edit-data="editData"
+      :show-dialog="showAddOrEditDialog"
+      @close="close"
     />
   </q-page-container>
 </template>
 
 <script lang="ts">
+import deepEqual from 'deep-equal'
+import { QTableColumn } from 'quasar'
 import { defineComponent } from 'vue'
 import AdminTable from '../../../components/table/index.vue'
 import { useProductStore } from '../../../stores/product'
+import { IProduct } from '../../../types'
+import ProductDialog from './add-and-edit/index.vue'
 import { columns } from './columns'
+
+interface IData {
+  showAddOrEditDialog: boolean,
+  editData: IProduct | null,
+  columns: QTableColumn[],
+  selectedProducts: IProduct[]
+}
 
 export default defineComponent( {
   components: {
+    ProductDialog,
     AdminTable,
   },
   computed: {
     ProductStore() {
       return useProductStore()
     },
-    products() {
-      return this.ProductStore.response.list
+    hasChanged() {
+      return ! deepEqual( this.originalProducts, this.workingCopyProducts )
+    },
+    originalProducts() {
+      return this.ProductStore.response.list || []
+    },
+    workingCopyProducts() {
+      return this.ProductStore.workingCopy?.list || []
     },
     pagesTotal() {
       return this.ProductStore.getNumberOfPages
@@ -38,19 +70,39 @@ export default defineComponent( {
     },
   },
 
-  data() {
-    return {
-      columns,
-    }
-  },
-
   created(): any {
-    if ( ! this.products.length ) {
-      this.ProductStore.loadPage( 1 )
+    this.ProductStore.loadPage( 1 )
+  },
+
+  data(): IData {
+    return {
+      showAddOrEditDialog: false,
+      editData: null,
+      columns,
+      selectedProducts: [],
     }
   },
 
-  name: 'IndexPage',
+  methods: {
+    add() {
+      this.showAddOrEditDialog = true
+    },
+    async save() {
+      await this.ProductStore.bulkUpdate()
+    },
+    edit( data: IProduct ) {
+      this.showAddOrEditDialog = true
+      this.editData = data
+    },
+    close() {
+      this.showAddOrEditDialog = false
+    },
+    setValue( { id, attrName, value }: any ) {
+      this.ProductStore.setValue( attrName, id, value )
+    },
+  },
+
+  name: 'ProductsPage',
 } )
 </script>
 

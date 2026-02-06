@@ -18,6 +18,7 @@
           <div>v1.0.0</div>
         </q-toolbar>
       </q-header>
+
       <q-drawer
         v-model="leftDrawerOpen"
         :breakpoint="500"
@@ -36,6 +37,7 @@
               <q-item-section>
                 <q-item-label> {{ menuItem.label }}</q-item-label>
               </q-item-section>
+              <q-item-section v-if="menuItem.label==='Products'" id="save"></q-item-section>
             </q-item>
             <q-separator v-if="menuItem.seperator" :key="'sep' + index"/>
           </template>

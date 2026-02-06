@@ -10,28 +10,38 @@
     row-key="id"
     selection="multiple"
     v-bind="$attrs"
-    @update:selected="(val: IBrand) => $emit('update:selected', val)"
+    @update:selected="(val: any) => $emit('update:selected', val)"
   >
     <template v-slot:top-right>
       <q-btn
-        :disable="isBrandSelected"
+        :disable="isItemSelected"
         color="primary"
         icon="add"
         @click="$emit('add')"
       >
         Add {{ title }}
-        <q-tooltip v-if="isBrandSelected" :offset="[10, 10]" class="bg-grey-7">
+        <q-tooltip v-if="isItemSelected" :offset="[10, 10]" class="bg-grey-7">
           Can't use when {{ title }} selected
         </q-tooltip>
       </q-btn>
       <q-btn
-        v-if="isBrandSelected"
+        v-if="isItemSelected && showRemove"
         class="q-ml-lg"
         color="red"
         icon="delete"
         label="Bulk Delete"
-        @click="$emit('delete:bulk', selected)"
+        @click="$emit('remove:bulk', selected)"
       />
+      <Teleport defer to="#save">
+        <q-btn
+          v-if="enableSaveBtn"
+          color="orange-8"
+          flat
+          icon="save"
+          size="md"
+          @click="$emit('save')"
+        />
+      </Teleport>
     </template>
 
     <template v-slot:body-cell-actions="props">
@@ -44,17 +54,30 @@
           @click="$emit('edit', props.row)"
         />
         <q-btn
+          v-if="showRemove"
           class="q-ml-none"
           color="red"
           flat
-          icon="delete"
-          @click="$emit('delete', props.row)"
+          icon="remove"
+          @click="$emit('remove', props.row)"
         />
       </q-td>
     </template>
 
-    <template v-for="(_, slot) in $slots" v-slot:[slot]="scope">
-      <slot :name="slot" v-bind="scope"/>
+    <template v-slot:body-cell-name="{ value, row }">
+      <q-input
+        :model-value="value"
+        filled
+        @update:model-value="value => setValue('name', row.id,value)"
+      />
+    </template>
+
+    <template v-slot:body-cell-price="{ value, row }">
+      <q-input
+        :model-value="value"
+        filled
+        @update:model-value="value => setValue('price', row.id,value)"
+      />
     </template>
   </q-table>
 </template>
@@ -62,7 +85,7 @@
 <script lang="ts">
 import { QTableColumn } from 'quasar'
 import { defineComponent, PropType } from 'vue'
-import { IBrand } from '../../types'
+import { IProductRecord } from '../../types'
 
 export default defineComponent( {
   computed: {
@@ -73,17 +96,24 @@ export default defineComponent( {
         sortBy: 'lastUpdatedAt',
       }
     },
-    isBrandSelected() {
+    isItemSelected() {
       return this.selected.length > 0
     },
   },
 
-  emits: [ 'add', 'edit', 'delete:bulk', 'delete', 'update:selected' ],
+  emits: [ 'add', 'edit', 'save', 'remove:bulk', 'setValue', 'remove', 'update:selected' ],
+
+  methods: {
+    setValue( attrName: keyof IProductRecord, id: number, value: string ) {
+      this.$emit( 'setValue', { attrName, id, value } )
+    },
+  },
 
   name: 'AdminTable',
+
   props: {
     selected: {
-      type: Array as PropType<IBrand[]>,
+      type: Array as PropType<any[]>,
       default: () => [],
     },
     title: {
@@ -96,9 +126,21 @@ export default defineComponent( {
     },
     columns: {
       type: Array as PropType<QTableColumn[]>,
-      required: true,
+      default: () => [],
     },
     loading: {
+      type: Boolean,
+      default: false,
+    },
+    showRemove: {
+      type: Boolean,
+      default: false,
+    },
+    enableSaveBtn: {
+      type: Boolean,
+      default: false,
+    },
+    showBulkEdit: {
       type: Boolean,
       default: false,
     },

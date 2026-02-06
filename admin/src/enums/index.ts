@@ -11,6 +11,12 @@ export enum EnumUserStatus {
   UNVERIFIED = 'UNVERIFIED'
 }
 
+export enum EnumProductStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  PENDING = 'PENDING'
+}
+
 
 export enum EnumBrandStatus {
   ACTIVE = 'ACTIVE',

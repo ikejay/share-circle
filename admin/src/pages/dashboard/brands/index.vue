@@ -4,24 +4,24 @@
       v-model:selected="selectedBrands"
       :columns="columns"
       :rows="brands"
+      :show-delete="true"
       title="Brands"
       @add="add"
       @close="close"
-      @delete="handleDelete"
+      @delete="remove"
       @edit="edit"
       @delete:bulk="handleBulkDelete"
     />
 
     <brand-dialog
-      :edit-data="editData"
-      :show-dialog="showAddOrEditDialog"
+      v-if="showAddOrEditDialog"
+      :existing-brand="editData"
       @close="close"
     />
   </q-page-container>
 </template>
 
 <script lang="ts">
-import { QTableColumn } from 'quasar'
 import { defineComponent } from 'vue'
 import AdminTable from '../../../components/table/index.vue'
 import { useBrandStore } from '../../../stores/brand'
@@ -33,7 +33,6 @@ interface IData {
   showAddOrEditDialog: boolean
   editData: IBrand | null
   selectedBrands: IBrand[]
-  columns: QTableColumn[]
 }
 
 export default defineComponent( {
@@ -59,6 +58,9 @@ export default defineComponent( {
         this.BrandStore.loadPage( page )
       },
     },
+    columns() {
+      return columns
+    },
   },
 
   created(): any {
@@ -72,7 +74,6 @@ export default defineComponent( {
       showAddOrEditDialog: false,
       editData: null,
       selectedBrands: [],
-      columns,
     }
   },
 
@@ -133,7 +134,7 @@ export default defineComponent( {
       } ).onOk( () => this.processBulkDelete() )
     },
 
-    handleDelete( item: IBrand ) {
+    remove( item: IBrand ) {
       console.log( 'To be deleted', item )
       this.$q.dialog( {
         title: 'Confirm Deletion',

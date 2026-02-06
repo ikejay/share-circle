@@ -4,8 +4,13 @@ import { IBrand, IBulkDeleteResponse, IDeleteResponse, IPaging } from 'src/types
 const baseUrl = '/brands'
 
 export class BrandApi {
-  static async loadPage( paging: IPaging ): Promise<IBrand> {
+  static async loadPage( paging: IPaging ) {
     const { data } = await api.post( baseUrl, { paging } )
+    return data
+  }
+
+  static async loadAll(): Promise<IBrand[]> {
+    const { data } = await api.get( baseUrl )
     return data
   }
 

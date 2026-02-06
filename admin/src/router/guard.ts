@@ -1,55 +1,36 @@
-import { displayMessage } from 'src/composables/display-message'
-import { signedInEvent } from 'src/events/EventReceiver'
-import { useAuthUserStore } from '../stores/auth'
 import { Router } from 'vue-router'
+import { useAuthUserStore } from '../stores/auth'
 
 export const applyRouterGuard = ( router: Router ) => {
-  const AuthUserStore = useAuthUserStore()
-
-  const HomePage = { name: 'Home' }
-
   router.beforeEach( async ( to, from, next ) => {
-    const { isInInitialState } = AuthUserStore
+    const authStore = useAuthUserStore()
 
-    if ( isInInitialState ) {
-      await AuthUserStore.whoAmIAction()
+    if ( ! authStore.isAuthenticated ) {
+      await authStore.checkAuthStatus()
     }
 
-
-    if ( to.name === 'root' ) {
-      return next( { name: 'Home' } )
+    if ( to.path === '/' ) {
+      return next( { name: 'login' } )
     }
 
-    if ( to && to.query[ 'login' ] === 'success' && AuthUserStore.isSingedIn ) {
-      await signedInEvent()
-      const { isAdmin } = AuthUserStore
-
-      const pageAfterSignIn = isAdmin
-        ? { name: 'Dashboard' }
-        : { name: 'Login' }
-
-      console.log( pageAfterSignIn )
-
-      return next( pageAfterSignIn )
+    if ( to.query.login === 'success' && authStore.getIsAuthenticated ) {
+      return next( { name: 'brands' } ) // Redirect to your actual dashboard start
     }
 
-    if ( to && to.query[ 'login' ] === 'denied' && ! AuthUserStore.isSingedIn ) {
-      return next( { name: 'signInDenied' } )
+    if ( to.query.login === 'denied' ) {
+      return next( { name: 'login', query: { error: 'denied' } } )
     }
 
-    if ( to.matched.length === 0 ) {
-      displayMessage(
-        'Diese Route existiert nicht!',
-        '',
-      )
+    const requiresAuth = to.matched.some( record => record.meta.requiresAuth )
 
-      return next( HomePage )
-
-    } else if ( to.matched.some( ( { meta } ) => meta.requiresAuth ) && ! AuthUserStore.isSingedIn ) {
-      return next( { name: 'Home' } )
-
-    } else {
-      return next()
+    if ( requiresAuth && ! authStore.getIsAuthenticated ) {
+      return next( { name: 'login' } )
     }
+
+    if ( to.name === 'login' && authStore.getIsAuthenticated ) {
+      return next( { name: 'brands' } )
+    }
+
+    next()
   } )
 }

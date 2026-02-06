@@ -1,5 +1,6 @@
 import { defineRouter } from '#q-app/wrappers'
 import { createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { applyRouterGuard } from './guard'
 import routes from './routes'
 
 /*
@@ -25,6 +26,8 @@ export default defineRouter( function (/* { store, ssrContext } */ ) {
     // quasar.conf.js -> build -> publicPath
     history: createHistory( process.env.VUE_ROUTER_BASE ),
   } )
+
+  applyRouterGuard( Router )
 
   return Router
 } )
