@@ -6,7 +6,13 @@ import { IBrand, IBrandResponse, IPaging } from '../../types'
 import { Product } from '../product'
 
 export class Brand {
-  constructor( protected readonly id: number ) {
+  protected constructor( protected readonly id: number ) {
+  }
+
+  static async build( id: number ) {
+    await this.checkIfExists( id )
+
+    return new Brand( id )
   }
 
   static async create( brand: Omit<IBrand, 'id'> ): Promise<IBrand> {
@@ -31,7 +37,6 @@ export class Brand {
       throw new Error( 'FAILED TO CREATE BRAND' )
     }
   }
-
 
   static async update( brandId: number, updatedData: Omit<IBrand, 'id'> ) {
     if ( ! updatedData ) {
@@ -125,7 +130,7 @@ export class Brand {
 
       return {
         deletedId: id,
-        deleted: ! isLinkedToProduct
+        deleted: ! isLinkedToProduct,
       }
 
     } catch ( err: any ) {
@@ -156,29 +161,30 @@ export class Brand {
     }
   }
 
-  static async getById( id: number ): Promise<IBrand> {
-    const brand = await knex
-      .queryBuilder()
-      .select()
-      .from( tableNameBrands )
-      .where( 'id', id )
-      .first()
-
-    if ( ! brand ) {
-      throw new Error( 'BRAND NOT FOUND' )
-    }
-
-    return brand
+  static async getAll(): Promise<IBrand[]> {
+    return knex( tableNameBrands )
   }
 
-
-  async get(): Promise<IBrand> {
-    const records = await knex.queryBuilder().select().from( tableNameBrands ).where( { id: this.id } )
+  protected static async checkIfExists( id: number ): Promise<void> {
+    const records = await knex.queryBuilder()
+      .select( 'id' )
+      .from( tableNameBrands )
+      .where( { id } )
 
     if ( records.length === 0 ) {
-      throw new Error( 'RECORD NOT FOUND' )
+      throw new Error( `BRAND WITH ID=${ id } NOT FOUND` )
     }
+  }
 
-    return records[ 0 ]
+  async get() {
+    const brand = await knex.queryBuilder()
+      .select()
+      .from( tableNameBrands )
+      .where( { id: this.id } )
+      .first()
+
+    console.log( 'Brandixxx', brand )
+
+    return brand
   }
 }

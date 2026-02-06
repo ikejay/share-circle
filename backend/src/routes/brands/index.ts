@@ -69,6 +69,16 @@ const bulkDeleteCb = async ( req: Request, res: Response ) => {
 }
 
 const getAllCb = async ( req: Request, res: Response ) => {
+  try {
+    const items = await Brand.getAll()
+    res.status( 200 ).json( items )
+  } catch ( e ) {
+    console.error( e )
+    res.status( 500 ).send( 'An error occured' )
+  }
+}
+
+const getAllPageCb = async ( req: Request, res: Response ) => {
   const { paging } = req.body
 
   try {
@@ -85,7 +95,7 @@ const getAllCb = async ( req: Request, res: Response ) => {
 const getById = async ( req: Request, res: Response ) => {
   const id: number = parseInt( req.params.id as string )
   try {
-    const item = await Brand.getById( id )
+    const item = ( await Brand.build( id ) ).get()
     res.send( item )
 
   } catch ( e ) {
@@ -95,7 +105,8 @@ const getById = async ( req: Request, res: Response ) => {
 }
 
 export const brandRoutes = Router()
-  .post( '/', getAllCb )
+  .post( '/', getAllPageCb )
+  .get( '/', getAllCb )
   .get( '/:id', getById )
   .post( '/create', createUploader( 'brand_logos' ).single( 'logoUrl' ), createCb )
   .put( '/:id', updateCb )

@@ -1,6 +1,6 @@
 import Bluebird from 'bluebird'
-import { EnumBrandStatus, EnumProductStatus } from '../../../types-and-enums/enums'
 import { snakeToCamelRecord } from '../../helpers/converters'
+import { logger } from '../../logger'
 import { knex } from '../../postgres'
 import { tableNameProduct } from '../../seeder/products'
 import { IPaging, IProduct, IProductRecord, IProductResponse } from '../../types'
@@ -12,23 +12,29 @@ export class Product {
   constructor( protected id: number ) {
   }
 
-  static async create( name: string, brandId: number ): Promise<IProduct> {
-    if ( name.length === 0 ) {
+  static async build( id: number ) {
+    await this.checkIfExists( id )
+
+    return new Product( id )
+  }
+
+  static async create( product: Omit<IProductRecord, 'id'> ): Promise<IProduct> {
+    if ( product.name.length === 0 ) {
       throw new Error( 'PRODUCT NAME IS EMPTY' )
     }
 
-    if ( brandId === 0 ) {
+    if ( product.brandId === 0 ) {
       throw new Error( 'INVALID BRAND ID' )
     }
 
-    const trimmedName = name = name.trim()
+    const trimmedName = product.name = product.name.trim()
 
-    if ( name.length > 35 ) {
+    if ( product.name.length > 35 ) {
       throw new Error( 'PRODUCT NAME IS TOO LONG' )
     }
 
     try {
-      const [ { id } ] = await knex( tableNameProduct ).insert( { trimmedName, brandId }, [ 'id' ] )
+      const [ { id } ] = await knex( tableNameProduct ).insert( { ...product, name: trimmedName }, [ 'id' ] )
 
       return new Product( id ).get()
 
@@ -38,6 +44,46 @@ export class Product {
       }
 
       throw err
+    }
+  }
+
+  static async update( productId: number, updatedProduct: Omit<IProductRecord, 'id'> ) {
+    if ( ! updatedProduct ) {
+      throw new Error( 'PRODUCT DETAILS ARE EMPTY' )
+    }
+
+    if ( updatedProduct.name.length === 0 ) {
+      throw new Error( 'PRODUCT NAME IS EMPTY' )
+    }
+
+    updatedProduct.name = updatedProduct.name.trimEnd().trimStart()
+
+    if ( updatedProduct.name.length > 35 ) {
+      throw new Error( 'PRODUCT NAME IS TOO LONG' )
+    }
+
+    try {
+      const updatedRows = await knex( tableNameProduct )
+        .where( { id: productId } )
+        .update( updatedProduct )
+        .returning( '*' )
+
+      if ( ! updatedRows || updatedRows.length === 0 ) {
+        throw new Error( 'PRODUCT NOT FOUND' )
+      }
+
+      const product = snakeToCamelRecord( updatedRows[ 0 ] )
+
+      const brandId: number = product.brandId
+      delete product.brandId
+
+      return {
+        ...product,
+        brand: await ( await Brand.build( brandId ) ).get(),
+      }
+
+    } catch ( err ) {
+      logger( err )
     }
   }
 
@@ -63,24 +109,23 @@ export class Product {
     const records = await knex.queryBuilder()
       .select()
       .from( tableNameProduct )
-      .where( 'status', EnumBrandStatus.ACTIVE )
       .orderBy( 'id' )
       .offset( offset )
       .limit( paging.itemsPerPage )
 
     const list = await Bluebird.mapSeries( records.map( snakeToCamelRecord ), async ( product: any ) => {
+
       const brandId = product.brandId
       delete product.brandId
 
       return {
         ...product,
-        brand: await Brand.getById( brandId ),
+        brand: await ( await Brand.build( brandId ) ).get(),
       }
     } ) as IProduct[]
 
     const numberOfProducts = await knex( tableNameProduct )
       .count<{ count: number }[]>( '* as count' )
-      .where( 'status', EnumProductStatus.ACTIVE )
 
     const totalCount = numberOfProducts[ 0 ].count
 
@@ -91,31 +136,23 @@ export class Product {
     }
   }
 
-  static async getProductById( id: number ) {
-    const records: IProductRecord[] = await knex.queryBuilder()
+  protected static async checkIfExists( id: number ): Promise<void> {
+    const records = await knex.queryBuilder()
       .select()
       .from( tableNameProduct )
-      .where( 'id', id )
+      .where( { id } )
+
 
     if ( records.length === 0 ) {
-      throw new Error( 'PRODUCT DOES NOT EXIST' )
+      throw new Error( `PRODUCT WITH ID=${ id } NOT FOUND` )
     }
-
-    const product = snakeToCamelRecord( records[ 0 ] )
-
-    product.brand = await Brand.getById( product.brandId )
-    delete product.brandId
-
-    return product as IProduct
   }
 
-  protected async get(): Promise<IProduct> {
-    const records = await knex.queryBuilder().select().from( tableNameProduct ).where( { id: this.id } )
-
-    if ( records.length === 0 ) {
-      throw new Error( 'FAILED TO CREATE PRODUCT' )
-    }
-
-    return records[ 0 ]
+  async get(): Promise<IProduct> {
+    return knex.queryBuilder()
+      .select()
+      .from( tableNameProduct )
+      .where( { id: this.id } )
+      .first()
   }
 }
