@@ -1,67 +1,87 @@
-import Bluebird from 'bluebird'
 import { knex } from '../../postgres'
 import { tableNameUser } from '../../seeder/users'
-import { IRecordUser } from '../../types'
-
+import { tableNameSocialAccount } from '../../seeder/social-accounts'
+import { IUser } from '../../types'
 
 export class User {
-  static async getById( id: number ): Promise<IRecordUser> {
-    const records: IRecordUser[] = await knex
+  static async getById( id: string ): Promise<IUser> {
+    const record = await knex
       .queryBuilder()
       .select()
       .from( tableNameUser )
       .where( { id } )
+      .whereNull( 'deleted_at' )
+      .first()
 
-
-    if ( records.length == 0 ) {
-      throw new Error( `USER WITH ${ id } NOT FOUND` )
+    if ( !record ) {
+      throw new Error( `USER WITH ID=${ id } NOT FOUND` )
     }
 
-    return records[ 0 ]
+    return record
   }
 
-  static async create( userDetails: Omit<IRecordUser, 'id'> ): Promise<IRecordUser> {
-    if ( ! userDetails ) {
-      throw new Error( 'USER DETAILS DO NOT EXIST' )
-    }
-
-    try {
-      const [ { id } ] = await knex( tableNameUser ).insert( userDetails, [ 'id' ] )
-      console.log( 'Id here', id )
-
-      return User.getById( id )
-
-    } catch ( err: any ) {
-
-      throw new Error( 'FAILED TO CREATE PRODUCT' )
-
-    }
-  }
-
-  static async getAll(): Promise<IRecordUser[]> {
-    const users: IRecordUser[] = await knex
+  static async getByEmail( email: string ): Promise<IUser | null> {
+    const record = await knex
       .queryBuilder()
       .select()
       .from( tableNameUser )
-      .orderBy( 'id' )
+      .where( { email } )
+      .whereNull( 'deleted_at' )
+      .first()
 
-    return Bluebird.mapSeries( users, async user => {
-      return this.getById( user.id )
-    } )
+    return record ?? null
   }
 
-
-  static async getAccountDetails( accountId: string ): Promise<Promise<IRecordUser> | null> {
-    const records: IRecordUser[] = await knex
+  static async getBySocialAccount( provider: string, providerUid: string ): Promise<IUser | null> {
+    const account = await knex
       .queryBuilder()
-      .select()
-      .from( tableNameUser )
-      .where( { accountId } )
+      .select( 'user_id' )
+      .from( tableNameSocialAccount )
+      .where( { provider, provider_uid: providerUid } )
+      .first()
 
-    if ( records.length === 0 ) {
-      return null
+    if ( !account ) return null
+
+    return this.getById( account.user_id )
+  }
+
+  static async create( userDetails: Pick<IUser, 'email' | 'displayName' | 'avatarUrl' | 'isEmailVerified' | 'status'> ): Promise<IUser> {
+    const [ { id } ] = await knex( tableNameUser ).insert( {
+      email: userDetails.email,
+      display_name: userDetails.displayName,
+      avatar_url: userDetails.avatarUrl,
+      is_email_verified: userDetails.isEmailVerified,
+      status: userDetails.status,
+    }, [ 'id' ] )
+
+    return this.getById( id )
+  }
+
+  static async upsertSocialAccount( userId: string, provider: string, providerUid: string, accessToken?: string, refreshToken?: string ) {
+    const existing = await knex( tableNameSocialAccount )
+      .where( { provider, provider_uid: providerUid } )
+      .first()
+
+    if ( existing ) {
+      await knex( tableNameSocialAccount )
+        .where( { provider, provider_uid: providerUid } )
+        .update( {
+          access_token: accessToken ?? null,
+          refresh_token: refreshToken ?? null,
+          updated_at: knex.fn.now(),
+        } )
+    } else {
+      await knex( tableNameSocialAccount ).insert( {
+        user_id: userId,
+        provider,
+        provider_uid: providerUid,
+        access_token: accessToken ?? null,
+        refresh_token: refreshToken ?? null,
+      } )
     }
+  }
 
-    return this.getById( records[ 0 ].id )
+  static async touchLastLogin( id: string ) {
+    await knex( tableNameUser ).where( { id } ).update( { last_login_at: knex.fn.now() } )
   }
 }

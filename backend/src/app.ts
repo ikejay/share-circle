@@ -7,15 +7,11 @@ import { InitIdentityProviders } from './identity-provider'
 import { connectToPostgres, sessionsSchemaName } from './postgres'
 import { appRoutes } from './routes'
 import { ensureTableExists } from './seeder'
-import { addDefaultBrands } from './seeder/brands'
-import { addDefaultIdentityProviders } from './seeder/identity-providers'
-import { addDefaultPermissions } from './seeder/permissions'
-import { addDefaultProducts } from './seeder/products'
-import { addDefaultAdminPermissions } from './seeder/user-permissions'
+import { addDefaultCategories } from './seeder/categories'
 
 const docsCb = ( req: Request, res: Response ) => {
   res.json( {
-    message: 'Base Shop Product Catalog API is running',
+    message: 'Share Circle API is running',
     version: '1.0.0',
     documentation: '/api/docs',
   } )
@@ -43,7 +39,7 @@ export class Backend {
   async run() {
     console.log( 'Starting Server Initializations...' )
 
-    console.log( 'Connecting To Postgress...' )
+    console.log( 'Connecting To Postgres...' )
     await connectToPostgres()
 
     console.log( 'Initializing Session Middleware...' )
@@ -109,7 +105,7 @@ export class Backend {
     InitIdentityProviders()
 
     this.sessionInitialized = true
-    console.log( 'Session Initialized Here' )
+    console.log( 'Session Initialized' )
   }
 
   private initializeRoutes() {
@@ -121,10 +117,6 @@ export class Backend {
 
   private async runSeeders() {
     await ensureTableExists()
-    await addDefaultBrands()
-    await addDefaultProducts()
-    await addDefaultIdentityProviders()
-    await addDefaultPermissions()
-    await addDefaultAdminPermissions()
+    await addDefaultCategories()
   }
 }

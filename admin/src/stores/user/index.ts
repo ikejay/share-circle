@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { AuthApi } from '../../api/auth'
 import { EnumLoadingState } from '../../enums'
-import { IRecordUser } from '../../types'
+import { IUser } from '../../types'
 
 interface IState {
-  user: IRecordUser,
+  user: IUser,
   loadingState: EnumLoadingState
 }
 

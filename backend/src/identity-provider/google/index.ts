@@ -3,8 +3,6 @@ import { Strategy as GoogleStrategy, StrategyOptions } from 'passport-google-oau
 import process from 'process'
 import { EnumUserStatus } from '../../../types-and-enums/enums'
 import { User } from '../../business-objects/user'
-import { IRecordUser } from '../../types'
-
 
 export const initGoogleStrategy = () => {
   const {
@@ -13,7 +11,6 @@ export const initGoogleStrategy = () => {
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
   } = process.env
-
 
   const callBackURL = `http://${ HOST_NAME }:${ PORT }/api/auth/google/callback`
 
@@ -29,44 +26,49 @@ export const initGoogleStrategy = () => {
     profile,
     done,
   ) => {
-    if ( ! profile.emails ) {
-      done( new Error( 'identity provider did not provide any email address of this user' ), false )
+    if ( !profile.emails || profile.emails.length === 0 ) {
+      done( new Error( 'Identity provider did not supply an email address' ), false )
       return
     }
 
-    let user: IRecordUser | null
-
-    // check if user exists, or create one
-
     try {
-      console.log( 'ACCESS TOKEN', accessToken )
-      console.log( 'REFRESH TOKEN', refreshToken )
-      console.log( 'Profile', profile )
+      // Look up user by social account first
+      let user = await User.getBySocialAccount( 'google', profile.id )
 
-      user = await User.getAccountDetails( profile.id )
+      if ( !user ) {
+        // Fall back to email match (e.g. user registered another way)
+        const email = profile.emails[ 0 ].value
+        user = await User.getByEmail( email )
 
-      if ( ! user ) {
-        const users = await User.getAll()
-        const isTheFirstUser = users.length === 0
+        if ( user ) {
+          // Link the Google account to the existing user
+          await User.upsertSocialAccount( user.id, 'google', profile.id, accessToken, refreshToken )
+        } else {
+          // Create a new user
+          const displayName = profile.displayName ||
+            `${ profile._json.given_name || '' } ${ profile._json.family_name || '' }`.trim() ||
+            email
 
-        user = await User.create( {
-          accountId: profile.id,
-          identityProviderId: 1,
-          firstName: profile._json.given_name || '',
-          lastName: profile._json.family_name || '',
-          postalAddressId: null,
-          email: profile._json.email || '',
-          phone: null,
-          status: isTheFirstUser ? EnumUserStatus.VERIFIED : EnumUserStatus.UNVERIFIED,
-          isAdmin: isTheFirstUser,
-        } )
+          user = await User.create( {
+            email,
+            displayName,
+            avatarUrl: profile._json.picture ?? null,
+            isEmailVerified: true,
+            status: EnumUserStatus.ACTIVE,
+          } )
+
+          await User.upsertSocialAccount( user.id, 'google', profile.id, accessToken, refreshToken )
+        }
+      } else {
+        // Refresh tokens on existing social account
+        await User.upsertSocialAccount( user.id, 'google', profile.id, accessToken, refreshToken )
       }
 
-      done( null, user ?? profile )
+      await User.touchLastLogin( user.id )
+      done( null, user )
     } catch ( e ) {
       console.error( e )
       done( e as Error, false )
     }
   } ) )
-
 }

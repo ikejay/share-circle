@@ -2,8 +2,6 @@ import passport from 'passport'
 import { User } from '../business-objects/user'
 import { initGoogleStrategy } from './google'
 
-
-
 export const InitIdentityProviders = () => {
   initGoogleStrategy()
 
@@ -11,7 +9,7 @@ export const InitIdentityProviders = () => {
     done( null, user.id )
   } )
 
-  passport.deserializeUser( async ( id: number, done ) => {
+  passport.deserializeUser( async ( id: string, done ) => {
     try {
       const user = await User.getById( id )
       done( null, user )

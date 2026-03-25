@@ -1,23 +1,2 @@
-import { knex } from '../../postgres'
-import { tableNameIdentityProvider } from '../../seeder/identity-providers'
-import { IIdentityProviderRecord } from '../../types'
-
-class IdentityProvider {
-  static async getById( id: number ): Promise<IIdentityProviderRecord> {
-    const record: IIdentityProviderRecord = await knex
-      .queryBuilder()
-      .select()
-      .from( tableNameIdentityProvider )
-      .where( { id } )
-      .first()
-
-
-    if ( ! record ) {
-      throw new Error( `USER WITH ${ id } NOT FOUND` )
-    }
-
-    return record
-  }
-
-
-}
+// Removed: IdentityProvider entity replaced by social_accounts in share-circle schema
+export class IdentityProvider {}

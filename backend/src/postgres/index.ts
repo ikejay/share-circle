@@ -18,7 +18,7 @@ const connect = async ( config: any ) => {
   } )
 }
 
-const DEFAULT_SCHEMA_NAME = 'shop_db'
+const DEFAULT_SCHEMA_NAME = 'share_circle'
 const SESSION_SCHEMA_NAME = 'user_sessions'
 
 export let schemaName = DEFAULT_SCHEMA_NAME
