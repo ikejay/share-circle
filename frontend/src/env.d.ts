@@ -1,3 +1,9 @@
+declare module '*.vue' {
+  import type { DefineComponent } from 'vue'
+  const component: DefineComponent<object, object, unknown>
+  export default component
+}
+
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: string;

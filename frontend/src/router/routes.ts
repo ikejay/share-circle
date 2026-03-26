@@ -3,18 +3,23 @@ import type { RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('layouts/LandingLayout.vue'),
     children: [
       {
         path: '',
-        component: () => import('pages/home/index.vue'),
-      },
-      {
-        name: 'product-detail',
-        path: '/product/:id',
-        component: () => import('pages/product-details/index.vue'),
+        component: () => import('pages/landing/index.vue'),
       },
     ],
+  },
+  {
+    path: '/auth',
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/auth/index.vue')
+      }
+    ]
   },
 
   // Always leave this as last one,

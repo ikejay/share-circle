@@ -1,7 +1,42 @@
 import { knex } from '../../postgres'
-import { EnumReminderType, EnumReminderChannel, EnumReminderStatus } from '../../../../types-and-enums/enums'
+import { EnumReminderType, EnumReminderChannel, EnumReminderStatus } from '../../../types-and-enums/enums'
 
 export const tableNameReminder = 'reminders'
+
+export const addSeedReminders = async () => {
+  const count = await knex( tableNameReminder ).count( 'id as c' ).first()
+  if ( Number( count?.c ) > 0 ) return
+
+  const alice = await knex( 'users' ).where( { email: 'alice@example.com' } ).first()
+  if ( !alice ) return
+
+  const drill = await knex( 'items' ).where( { owner_id: alice.id, name: 'DeWalt 20V Drill' } ).first()
+  if ( !drill ) return
+
+  const transaction = await knex( 'share_transactions' ).where( { item_id: drill.id, status: 'active' } ).first()
+  if ( !transaction ) return
+
+  await knex( tableNameReminder ).insert( [
+    {
+      transaction_id: transaction.id,
+      created_by: alice.id,
+      reminder_type: EnumReminderType.RETURN_NUDGE,
+      message: 'Hey, just a heads up — the drill return date is coming up soon!',
+      channel: EnumReminderChannel.IN_APP,
+      scheduled_for: '2026-03-13T09:00:00Z',
+      status: EnumReminderStatus.PENDING,
+    },
+    {
+      transaction_id: transaction.id,
+      created_by: alice.id,
+      reminder_type: EnumReminderType.RETURN_NUDGE,
+      message: 'Friendly reminder: the drill is due back tomorrow.',
+      channel: EnumReminderChannel.EMAIL,
+      scheduled_for: '2026-03-14T09:00:00Z',
+      status: EnumReminderStatus.PENDING,
+    },
+  ] )
+}
 
 export const createTableReminder = async () => {
   if ( !await knex.schema.hasTable( tableNameReminder ) ) {

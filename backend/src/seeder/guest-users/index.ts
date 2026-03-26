@@ -1,7 +1,40 @@
 import { knex } from '../../postgres'
-import { EnumGuestUserStatus } from '../../../../types-and-enums/enums'
+import { EnumGuestUserStatus } from '../../../types-and-enums/enums'
 
 export const tableNameGuestUser = 'guest_users'
+
+export const addSeedGuestUsers = async () => {
+  const count = await knex( tableNameGuestUser ).count( 'id as c' ).first()
+  if ( Number( count?.c ) > 0 ) return
+
+  const [ alice, bob ] = await Promise.all( [
+    knex( 'users' ).where( { email: 'alice@example.com' } ).first(),
+    knex( 'users' ).where( { email: 'bob@example.com' } ).first(),
+  ] )
+
+  if ( !alice || !bob ) return
+
+  const tokenExpiresAt = new Date( Date.now() + 7 * 24 * 60 * 60 * 1000 ).toISOString()
+
+  await knex( tableNameGuestUser ).insert( [
+    {
+      email: 'frank@external.com',
+      name: 'Frank Baker',
+      invite_token: 'seed-token-frank-abc123',
+      token_expires_at: tokenExpiresAt,
+      invited_by: alice.id,
+      status: EnumGuestUserStatus.INVITED,
+    },
+    {
+      email: 'grace@external.com',
+      name: 'Grace Liu',
+      invite_token: 'seed-token-grace-xyz789',
+      token_expires_at: tokenExpiresAt,
+      invited_by: bob.id,
+      status: EnumGuestUserStatus.ACCEPTED_SHARE,
+    },
+  ] )
+}
 
 export const createTableGuestUser = async () => {
   if ( !await knex.schema.hasTable( tableNameGuestUser ) ) {
