@@ -19,6 +19,11 @@ export type TAuthStatus = {
   authenticated: boolean
 }
 
+export interface IIdentityProviderRecord {
+  id: number
+  name: string
+}
+
 export type TRouteMenuItem = {
   icon: string
   label: string
@@ -28,6 +33,21 @@ export type TRouteMenuItem = {
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
+export interface IRecordUser {
+  id: string
+  email: string
+  displayName: string
+  avatarUrl: string | null
+  bio: string | null
+  phone: string | null
+  identityProviderId: number
+  isEmailVerified: boolean
+  status: EnumUserStatus
+  lastLoginAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface IUser {
   id: string
   email: string
@@ -36,11 +56,13 @@ export interface IUser {
   bio: string | null
   phone: string | null
   isEmailVerified: boolean
+  identityProvider: IIdentityProviderRecord
   status: EnumUserStatus
   lastLoginAt: string | null
   createdAt: string
   updatedAt: string
 }
+
 
 // ─── Connections ──────────────────────────────────────────────────────────────
 
@@ -183,4 +205,8 @@ export interface IPagedResponse<T> {
   list: T[]
   totalCount: number
   paging: IPaging
+}
+
+export type TuserStatus = {
+  isAuthenticated: boolean
 }
