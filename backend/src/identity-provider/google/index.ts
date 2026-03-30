@@ -26,7 +26,7 @@ export const initGoogleStrategy = () => {
     profile,
     done,
   ) => {
-    if ( !profile.emails || profile.emails.length === 0 ) {
+    if ( ! profile.emails || profile.emails.length === 0 ) {
       done( new Error( 'Identity provider did not supply an email address' ), false )
       return
     }
@@ -35,7 +35,7 @@ export const initGoogleStrategy = () => {
       // Look up user by social account first
       let user = await User.getBySocialAccount( 'google', profile.id )
 
-      if ( !user ) {
+      if ( ! user ) {
         // Fall back to email match (e.g. user registered another way)
         const email = profile.emails[ 0 ].value
         user = await User.getByEmail( email )
@@ -43,11 +43,10 @@ export const initGoogleStrategy = () => {
         if ( user ) {
           // Link the Google account to the existing user
           await User.upsertSocialAccount( user.id, 'google', profile.id, accessToken, refreshToken )
+
         } else {
           // Create a new user
-          const displayName = profile.displayName ||
-            `${ profile._json.given_name || '' } ${ profile._json.family_name || '' }`.trim() ||
-            email
+          const displayName = profile.displayName || `${ profile._json.given_name || '' } ${ profile._json.family_name || '' }`.trim() || email
 
           user = await User.create( {
             email,
@@ -64,11 +63,13 @@ export const initGoogleStrategy = () => {
         await User.upsertSocialAccount( user.id, 'google', profile.id, accessToken, refreshToken )
       }
 
-      await User.touchLastLogin( user.id )
+      await User.updateLatestLoggedIn( user.id )
       done( null, user )
+
     } catch ( e ) {
       console.error( e )
       done( e as Error, false )
+
     }
   } ) )
 }

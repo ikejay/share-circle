@@ -207,6 +207,6 @@ export interface IPagedResponse<T> {
   paging: IPaging
 }
 
-export type TuserStatus = {
+export interface IUserStatus {
   isAuthenticated: boolean
 }

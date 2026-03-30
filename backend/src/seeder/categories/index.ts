@@ -15,9 +15,10 @@ const defaultCategories = [
 ]
 
 export const createTableCategory = async () => {
-  if ( !await knex.schema.hasTable( tableNameCategory ) ) {
+  if ( ! await knex.schema.hasTable( tableNameCategory ) ) {
     await knex.schema.createTable( tableNameCategory, ( table ) => {
-      table.uuid( 'id' ).primary().defaultTo( knex.raw( 'gen_random_uuid()' ) )
+      table.increments().primary()
+      table.uuid( 'external_id' ).defaultTo( knex.raw( 'gen_random_uuid()' ) )
       table.string( 'name', 100 ).unique().notNullable()
       table.text( 'description' ).nullable()
       table.text( 'icon_url' ).nullable()
@@ -30,8 +31,15 @@ export const createTableCategory = async () => {
 }
 
 export const addDefaultCategories = async () => {
-  const tableIsEmpty = await knex.schema.hasTable( tableNameCategory ) &&
-    ( await knex.select().from( tableNameCategory ) ).length === 0
+  const tableExists = await knex.schema.hasTable( tableNameCategory )
+
+  if ( ! tableExists ) {
+    // TDO: Namig
+    throw new Error( 'ertzuikjhgtzuikjhgftzujkgzujgzhuj' )
+  }
+
+  // TODO: test and make ist saver !
+  const tableIsEmpty = ( await knex.select().from( tableNameCategory ) ).length === 0
 
   if ( tableIsEmpty ) {
     return Bluebird.each( defaultCategories, async ( category ) => {

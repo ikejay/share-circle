@@ -38,6 +38,7 @@ export const useAuthUserStore = defineStore( 'AuthUser', {
       await AuthApi.getUserData()
         .then( ( response ) => {
           this.loadingState = EnumLoadingState.LOADED
+          console.log('User=====', response)
           this.user = response
         } )
         .catch( ( error: any ) => {

@@ -31,6 +31,15 @@ const resourceNotFoundCb = ( req: Request, res: Response ) => {
   res.status( 404 ).json( { error: 'Route not found' } )
 }
 
+const { PORT, NODE_ENV } = process.env
+
+const port = PORT || 3000
+const environment = NODE_ENV || 'development'
+
+const onServerStartup = () => {
+  console.log( `Server running in ${ environment } mode on port ${ port }` )
+  console.log( `Health check: http://localhost:${ port }/api/health` )
+}
 
 export class Backend {
   private pgStore: any
@@ -62,6 +71,7 @@ export class Backend {
     await this.runSeeders()
 
     console.log( 'Server Initializations Complete...' )
+    return  this.app.listen( port, onServerStartup )
   }
 
   private setupBasicMiddleWare() {

@@ -8,9 +8,9 @@ export class AuthApi {
     return data
   }
 
-  static async checkAuthStatus() {
+  static async checkAuthStatus(): Promise<boolean> {
     const { data } = await api.get( `${ baseUrl }/check` )
-    return data
+    return data.isAuthenticated
   }
 
   static async getUserData() {

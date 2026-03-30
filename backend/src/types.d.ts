@@ -1,41 +1,72 @@
 import {
-  EnumUserStatus,
-  EnumConnectionStatus,
-  EnumItemCondition,
-  EnumItemVisibility,
-  EnumShareRequestStatus,
-  EnumShareRequestDirection,
-  EnumShareTransactionStatus,
   EnumConditionOnReturn,
-  EnumReminderType,
+  EnumConnectionStatus,
+  EnumContactType,
+  EnumGuestUserStatus,
+  EnumidentityProvider,
+  EnumItemCondition,
   EnumReminderChannel,
   EnumReminderStatus,
-  EnumGuestUserStatus,
+  EnumReminderType,
+  EnumShareRequestDirection,
+  EnumShareRequestStatus,
+  EnumShareTransactionStatus,
+  EnumUserStatus,
 } from '../types-and-enums/enums'
+
+// ─── User contact ───────────────────────────────────────────────────────────────────
+
+export interface IUserContact {
+  id: number
+  userId: number
+  type: EnumContactType
+  value: string
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
+}
+
+export type tNewContact = Omit<IUserContact, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
 
 // ─── Users ───────────────────────────────────────────────────────────────────
 
 export interface IUser {
-  id: string                  // UUID
-  email: string
+  id: number
+  externalId: string
   displayName: string
-  avatarUrl: string | null
-  bio: string | null
-  phone: string | null
-  isEmailVerified: boolean
   status: EnumUserStatus
+  contacts: IUserContatct[]
   lastLoginAt: string | null
   createdAt: string
   updatedAt: string
   deletedAt: string | null
 }
 
+export type tNewUser = Omit<IUser, 'id' | 'externalId' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastLoginAt'>
+
+// ─── Sharings ─────────────────────────────────────────────────────────
+
+export interface ISharing {
+  id: string
+  itemId: string
+  issuerId: string
+  recipientId: string
+  issueDate: string
+  plannedReturnDate: string
+  createdAt: Date
+  deletedAt: Date
+  updatedAt: Date
+}
+
+
+export type tNewSharing = Omit<Isharing, 'id' | 'externalId' | 'createdAt' | 'updatedAt' | 'deletedAt' >
+
 // ─── Social Accounts ─────────────────────────────────────────────────────────
 
 export interface ISocialAccount {
-  id: string
-  userId: string
-  provider: string
+  id: number
+  userId: number
+  provider: EnumidentityProvider
   providerUid: string
   accessToken: string | null
   refreshToken: string | null
@@ -61,6 +92,7 @@ export interface IConnection {
 
 export interface ICategory {
   id: string
+  externalId: string
   name: string
   description: string | null
   iconUrl: string | null
@@ -81,20 +113,20 @@ export interface IUserCategoryPreference {
 // ─── Items ───────────────────────────────────────────────────────────────────
 
 export interface IItem {
-  id: string
-  ownerId: string
-  categoryId: string
+  id: number
+  externalId: string
+  ownerId: number
+  categoryId: number
   name: string
   description: string | null
   condition: EnumItemCondition
-  isAvailable: boolean
-  visibility: EnumItemVisibility
-  estimatedValue: number | null
   notes: string | null
   createdAt: string
   updatedAt: string
   deletedAt: string | null
 }
+
+export type tNewItem = Omit<IItem, 'id' | 'externalId' | 'createdAt' | 'updatedAt' | 'deletedAt'>
 
 // ─── Item Images ─────────────────────────────────────────────────────────────
 

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { AuthApi } from 'src/api/auth'
 import { EnumLoadingState } from 'src/enums'
-import { IRecordUser, IUser, TuserStatus } from 'src/types'
+import { IUser } from 'src/types'
 
 interface IState {
   user: IUser | null,
@@ -19,9 +19,10 @@ export const useAuthUserStore = defineStore( 'AuthUser', {
   actions: {
     async checkAuthStatus() {
       this.loadingState = EnumLoadingState.LOADING
-      await AuthApi.checkAuthStatus()
-        .then( ( response: TuserStatus ) => {
-          this.isAuthenticated = response.isAuthenticated
+
+      return AuthApi.checkAuthStatus()
+        .then( ( isAuthenticated ) => {
+          this.isAuthenticated = isAuthenticated
           this.loadingState = EnumLoadingState.LOADED
         } )
         .catch( ( error: any ) => {
@@ -32,15 +33,16 @@ export const useAuthUserStore = defineStore( 'AuthUser', {
 
     async fetchUser() {
       this.loadingState = EnumLoadingState.LOADING
-      await AuthApi.getUserData()
-        .then((response: IUser)=> {
+
+      return AuthApi.getUserData()
+        .then( ( response: IUser ) => {
           this.user = response
           this.loadingState = EnumLoadingState.LOADED
-        })
-        .catch((error: any) => {
-          console.log(error)
+        } )
+        .catch( ( error: any ) => {
+          console.log( error )
           this.loadingState = EnumLoadingState.ERROR
-        })
+        } )
     },
 
     clearAuth() {
@@ -51,9 +53,7 @@ export const useAuthUserStore = defineStore( 'AuthUser', {
   },
 
   getters: {
-    getUser: ( state: IState ) => state.user,
-    getIsAuthenticated: ( state: IState ) => state.isAuthenticated,
-    getLoadingState: ( state: IState ) => state.loadingState,
+    isLoading: ( state: IState ) => state.loadingState === EnumLoadingState.LOADING,
+    hasError: ( state: IState ) => state.loadingState === EnumLoadingState.ERROR,
   },
-
-})
+} )

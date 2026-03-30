@@ -77,3 +77,12 @@ export enum EnumGuestUserStatus {
   SIGNED_UP = 'signed_up',
   EXPIRED = 'expired',
 }
+
+export enum EnumContactType {
+  EMAIL = 'EMAIL',
+  PHONE = 'PHONE'
+}
+
+export enum EnumidentityProvider {
+  GOOGLE = 'GOOGLE'
+}

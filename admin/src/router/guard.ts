@@ -13,7 +13,7 @@ export const applyRouterGuard = ( router: Router ) => {
       return next( { name: 'login' } )
     }
 
-    if ( to.query.login === 'success' && authStore.getIsAuthenticated ) {
+    if ( to.query.login === 'success' && authStore.isAuthenticated ) {
       return next( { name: 'brands' } ) // Redirect to your actual dashboard start
     }
 
@@ -23,11 +23,11 @@ export const applyRouterGuard = ( router: Router ) => {
 
     const requiresAuth = to.matched.some( record => record.meta.requiresAuth )
 
-    if ( requiresAuth && ! authStore.getIsAuthenticated ) {
+    if ( requiresAuth && ! authStore.isAuthenticated ) {
       return next( { name: 'login' } )
     }
 
-    if ( to.name === 'login' && authStore.getIsAuthenticated ) {
+    if ( to.name === 'login' && authStore.isAuthenticated ) {
       return next( { name: 'brands' } )
     }
 

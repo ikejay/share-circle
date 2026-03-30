@@ -48,7 +48,7 @@ const getCurrentUser = ( req: Request, res: Response ) => {
 }
 
 const checkAuth = ( req: Request, res: Response ) => {
-  res.json( { authenticated: req.isAuthenticated() } )
+  res.json( { isAuthenticated: req.isAuthenticated() } )
 }
 
 export const authRoutes = Router()

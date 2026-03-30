@@ -8,7 +8,7 @@
       <q-icon color="negative" name="error" size="50px"/>
       <p class="q-mt-md text-negative">{{ error }}</p>
       <q-btn class="q-mt-md" label="Go Back to Login" to="/auth"/>
-      <pre>{{ getUser }}</pre>
+      <pre>{{ user }}</pre>
     </div>
   </q-page>
 </template>
@@ -17,11 +17,11 @@
 import { defineComponent } from 'vue'
 import { EnumLoadingState } from '../../../enums'
 import { useAuthUserStore } from '../../../stores/auth'
-import { IRecordUser } from '../../../types'
+import { IUser } from '../../../types'
 
 type IData = {
   loading: EnumLoadingState,
-  user: IRecordUser | null,
+  user: IUser | null,
   error: string,
   timer: any
 }
@@ -31,8 +31,8 @@ export default defineComponent( {
     AuthStore() {
       return useAuthUserStore()
     },
-    getUser() {
-      return useAuthUserStore().getUser
+    user() {
+      return useAuthUserStore().user
     },
   },
 

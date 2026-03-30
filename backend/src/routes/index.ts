@@ -10,5 +10,5 @@ const healthCheck = ( req: Request, res: Response ) => {
 }
 
 export const appRoutes = Router()
-  .get( '/health', healthCheck )
+  .use( '/health', healthCheck )
   .use( '/auth', authRoutes )

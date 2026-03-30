@@ -17,6 +17,7 @@ declare module 'vue' {
 const api = axios.create(
   {
     baseURL: '/api',
+    withCredentials: true,
     headers: {
       'Accept': 'application/vnd.github+json',
     },

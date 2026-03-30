@@ -1,10 +1,16 @@
+import Bluebird from 'bluebird'
+import { snakeToCamelRecord } from '../../helpers/converters'
 import { knex } from '../../postgres'
-import { tableNameUser } from '../../seeder/users'
 import { tableNameSocialAccount } from '../../seeder/social-accounts'
-import { IUser } from '../../types'
+import { tableNameUser } from '../../seeder/users'
+import { IUser, tNewUser } from '../../types'
+import { UserContact } from '../user-contact'
 
 export class User {
-  static async getById( id: string ): Promise<IUser> {
+  static async getById( id: number ): Promise<IUser> {
+    if ( id > 2147483647 || id < 0 ) {
+      throw new Error( 'ID OUT OF RANGE' )
+    }
     const record = await knex
       .queryBuilder()
       .select()
@@ -13,11 +19,16 @@ export class User {
       .whereNull( 'deleted_at' )
       .first()
 
-    if ( !record ) {
+    if ( ! record ) {
       throw new Error( `USER WITH ID=${ id } NOT FOUND` )
     }
 
-    return record
+    const contacts = await UserContact.getByUserId( id )
+
+    return {
+      ...snakeToCamelRecord( record ),
+      contacts,
+    } as IUser
   }
 
   static async getByEmail( email: string ): Promise<IUser | null> {
@@ -29,7 +40,9 @@ export class User {
       .whereNull( 'deleted_at' )
       .first()
 
-    return record ?? null
+    return record
+      ? snakeToCamelRecord( record ) as IUser
+      : null
   }
 
   static async getBySocialAccount( provider: string, providerUid: string ): Promise<IUser | null> {
@@ -40,19 +53,15 @@ export class User {
       .where( { provider, provider_uid: providerUid } )
       .first()
 
-    if ( !account ) return null
+    if ( ! account ) return null
 
     return this.getById( account.user_id )
   }
 
-  static async create( userDetails: Pick<IUser, 'email' | 'displayName' | 'avatarUrl' | 'isEmailVerified' | 'status'> ): Promise<IUser> {
-    const [ { id } ] = await knex( tableNameUser ).insert( {
-      email: userDetails.email,
-      display_name: userDetails.displayName,
-      avatar_url: userDetails.avatarUrl,
-      is_email_verified: userDetails.isEmailVerified,
-      status: userDetails.status,
-    }, [ 'id' ] )
+  static async create( { contacts, ...user }: tNewUser ): Promise<IUser> {
+    const [ { id } ] = await knex( tableNameUser ).insert( user, [ 'id' ] )
+
+    await Bluebird.each( contacts, async contact => UserContact.create( { ...contact, userId: id } ) )
 
     return this.getById( id )
   }
@@ -81,7 +90,7 @@ export class User {
     }
   }
 
-  static async touchLastLogin( id: string ) {
+  static async updateLatestLoggedIn( id: string ) {
     await knex( tableNameUser ).where( { id } ).update( { last_login_at: knex.fn.now() } )
   }
 }
