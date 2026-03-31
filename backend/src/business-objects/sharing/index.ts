@@ -1,10 +1,10 @@
 import { snakeToCamelRecord } from '../../helpers/converters'
 import { knex } from '../../postgres'
 import { tableNameSharing } from '../../seeder/sharings'
-import { IItem, tNewItem, tNewSharing } from '../../types'
+import { IItem, ISharing, tNewItem, tNewSharing } from '../../types'
 
 export class Sharing {
-  static async getById( id: string ): Promise<IItem> {
+  static async getById( id: number ): Promise<ISharing> {
     const record = await knex
       .queryBuilder()
       .select()
@@ -17,10 +17,10 @@ export class Sharing {
       throw new Error( `USER WITH ID=${ id } NOT FOUND` )
     }
 
-    return snakeToCamelRecord( record ) as IItem
+    return snakeToCamelRecord( record ) as ISharing
   }
 
-  static async create( item: tNewSharing ): Promise<IItem> {
+  static async create( item: tNewSharing ): Promise<ISharing> {
     try {
       const [ { id } ] = await knex( tableNameSharing ).insert( item, [ 'id' ] )
 

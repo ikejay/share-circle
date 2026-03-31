@@ -47,7 +47,7 @@ export type tNewUser = Omit<IUser, 'id' | 'externalId' | 'createdAt' | 'updatedA
 // ─── Sharings ─────────────────────────────────────────────────────────
 
 export interface ISharing {
-  id: string
+  id: number
   itemId: string
   issuerId: string
   recipientId: string
