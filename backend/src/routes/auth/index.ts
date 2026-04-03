@@ -34,14 +34,7 @@ const logout = ( req: Request, res: Response ) => {
 const getCurrentUser = ( req: Request, res: Response ) => {
   if ( req.isAuthenticated() ) {
     const user = req.user as IUser
-    res.json( {
-      id: user.id,
-      email: user.email,
-      displayName: user.displayName,
-      avatarUrl: user.avatarUrl,
-      status: user.status,
-      isEmailVerified: user.isEmailVerified,
-    } )
+    res.json( user )
   } else {
     res.status( 401 ).json( { error: 'Not authenticated' } )
   }

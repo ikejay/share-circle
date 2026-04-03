@@ -3,7 +3,7 @@ import { snakeToCamelRecord } from '../../helpers/converters'
 import { knex } from '../../postgres'
 import { tableNameSocialAccount } from '../../seeder/social-accounts'
 import { tableNameUser } from '../../seeder/users'
-import { IUser, tNewUser } from '../../types'
+import { IUser, tNewContact, tNewUser } from '../../types'
 import { UserContact } from '../user-contact'
 
 export class User {
@@ -31,18 +31,12 @@ export class User {
     } as IUser
   }
 
-  static async getByEmail( email: string ): Promise<IUser | null> {
-    const record = await knex
-      .queryBuilder()
-      .select()
-      .from( tableNameUser )
-      .where( { email } )
-      .whereNull( 'deleted_at' )
-      .first()
+  static async getByContact( contact: tNewContact ): Promise<IUser | null> {
+    const record = await UserContact.getByUserContact( contact )
 
-    return record
-      ? snakeToCamelRecord( record ) as IUser
-      : null
+    if ( ! record ) return null
+
+    return this.getById( record.userId )
   }
 
   static async getBySocialAccount( provider: string, providerUid: string ): Promise<IUser | null> {
@@ -61,12 +55,12 @@ export class User {
   static async create( { contacts, ...user }: tNewUser ): Promise<IUser> {
     const [ { id } ] = await knex( tableNameUser ).insert( user, [ 'id' ] )
 
-    await Bluebird.each( contacts, async contact => UserContact.create( { ...contact, userId: id } ) )
+    await Bluebird.each( contacts, async ( contact: tNewContact ) => UserContact.create( { ...contact, userId: id } ) )
 
     return this.getById( id )
   }
 
-  static async upsertSocialAccount( userId: string, provider: string, providerUid: string, accessToken?: string, refreshToken?: string ) {
+  static async upsertSocialAccount( userId: number, provider: string, providerUid: string, accessToken?: string, refreshToken?: string ) {
     const existing = await knex( tableNameSocialAccount )
       .where( { provider, provider_uid: providerUid } )
       .first()
@@ -90,7 +84,7 @@ export class User {
     }
   }
 
-  static async updateLatestLoggedIn( id: string ) {
+  static async updateLatestLoggedIn( id: number ) {
     await knex( tableNameUser ).where( { id } ).update( { last_login_at: knex.fn.now() } )
   }
 }

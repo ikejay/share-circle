@@ -32,8 +32,17 @@ export class UserContact {
     return records.map( snakeToCamelRecord ) as IUserContact[]
   }
 
+  static async getByUserContact( contact: tNewContact ): Promise<IUserContact> {
+    return knex
+      .queryBuilder()
+      .select( 'user_id' )
+      .from( tableNameUserContact )
+      .where( contact )
+      .whereNull( 'deleted_at' )
+      .first()
+  }
 
-  static async create( contact: tNewContact ): Promise<IUserContact> {
+  static async create( contact: tNewContact & { userId: number } ): Promise<IUserContact> {
     if ( await UserContact.userDoesNotExist( contact.userId ) ) {
       throw new Error( `ERROR in  UserContact.create(): USER WITH ID=${ contact.userId } NOT FOUND` )
     }

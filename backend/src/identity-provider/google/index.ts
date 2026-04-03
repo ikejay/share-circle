@@ -1,7 +1,7 @@
 import passport from 'passport'
 import { Strategy as GoogleStrategy, StrategyOptions } from 'passport-google-oauth20'
 import process from 'process'
-import { EnumUserStatus } from '../../../types-and-enums/enums'
+import { EnumContactType, EnumUserStatus } from '../../../types-and-enums/enums'
 import { User } from '../../business-objects/user'
 
 export const initGoogleStrategy = () => {
@@ -38,7 +38,7 @@ export const initGoogleStrategy = () => {
       if ( ! user ) {
         // Fall back to email match (e.g. user registered another way)
         const email = profile.emails[ 0 ].value
-        user = await User.getByEmail( email )
+        user = await User.getByContact( { type: EnumContactType.EMAIL, value: email } )
 
         if ( user ) {
           // Link the Google account to the existing user
@@ -49,10 +49,11 @@ export const initGoogleStrategy = () => {
           const displayName = profile.displayName || `${ profile._json.given_name || '' } ${ profile._json.family_name || '' }`.trim() || email
 
           user = await User.create( {
-            email,
             displayName,
+            contacts: [
+              ...profile.emails.map( email => ( { type: EnumContactType.EMAIL, value: email } ) ),
+            ],
             avatarUrl: profile._json.picture ?? null,
-            isEmailVerified: true,
             status: EnumUserStatus.ACTIVE,
           } )
 

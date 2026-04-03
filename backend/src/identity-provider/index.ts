@@ -11,7 +11,7 @@ export const InitIdentityProviders = () => {
 
   passport.deserializeUser( async ( id: string, done ) => {
     try {
-      const user = await User.getById( id )
+      const user = await User.getById( Number( id ) )
       done( null, user )
     } catch ( e ) {
       done( e )

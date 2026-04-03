@@ -5,13 +5,13 @@ import { computed } from 'vue'
 
 const authStore = useAuthUserStore()
 
-const user = computed(() => {
+const user = computed( () => {
   return authStore.user
-})
+} )
 
-const ownerInitials = computed(() => {
+const ownerInitials = computed( () => {
   return user.value?.displayName.charAt( 0 ).toUpperCase() ?? ''
-})
+} )
 </script>
 
 <template>
@@ -27,7 +27,7 @@ const ownerInitials = computed(() => {
         </div>
       </div>
       <div class="actions">
-        <q-avatar  class="q-mr-xs" color="primary" size="24px" text-color="white">
+        <q-avatar class="q-mr-xs" color="primary" size="24px" text-color="white">
           <template v-if="user?.avatarUrl">
             <img :src="user.avatarUrl">
           </template>
@@ -35,14 +35,7 @@ const ownerInitials = computed(() => {
             <h3>{{ ownerInitials }}</h3>
           </template>
         </q-avatar>
-        <q-btn
-          class="browse-btn bg-primary"
-          no-caps
-          unelevated
-          @click="$router.push('/auth')"
-        >
-          Get Started
-        </q-btn>
+        <div class="text-black q-ml-lg">{{ user?.displayName }}</div>
       </div>
     </div>
   </q-header>
@@ -84,7 +77,6 @@ const ownerInitials = computed(() => {
 
 
 .actions
-  width: 200px
   height: 30px
   display: flex
   justify-content: space-between

@@ -26,7 +26,7 @@ export interface IUserContact {
   deletedAt: string | null
 }
 
-export type tNewContact = Omit<IUserContact, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
+export type tNewContact = Omit<IUserContact, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'userId'>
 
 // ─── Users ───────────────────────────────────────────────────────────────────
 
@@ -35,14 +35,17 @@ export interface IUser {
   externalId: string
   displayName: string
   status: EnumUserStatus
-  contacts: IUserContatct[]
+  contacts: IUserContact[]
+  avatarUrl: string | null
   lastLoginAt: string | null
   createdAt: string
   updatedAt: string
   deletedAt: string | null
 }
 
-export type tNewUser = Omit<IUser, 'id' | 'externalId' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastLoginAt'>
+export type tNewUser = Omit<IUser, 'id' | 'externalId' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastLoginAt', 'contacts'> & {
+  contacts: tNewContact[]
+}[]
 
 // ─── Sharings ─────────────────────────────────────────────────────────
 
@@ -59,7 +62,7 @@ export interface ISharing {
 }
 
 
-export type tNewSharing = Omit<Isharing, 'id' | 'externalId' | 'createdAt' | 'updatedAt' | 'deletedAt' >
+export type tNewSharing = Omit<Isharing, 'id' | 'externalId' | 'createdAt' | 'updatedAt' | 'deletedAt'>
 
 // ─── Social Accounts ─────────────────────────────────────────────────────────
 
