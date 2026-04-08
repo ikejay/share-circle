@@ -9,14 +9,7 @@ import { appRoutes } from './routes'
 import { ensureTableExists } from './seeder'
 import { addDefaultCategories } from './seeder/categories'
 import { addSeedUsers } from './seeder/users'
-import { addSeedConnections } from './seeder/connections'
-import { addSeedUserCategoryPreferences } from './seeder/user-category-preferences'
 import { addSeedItems } from './seeder/items'
-import { addSeedItemImages } from './seeder/item-images'
-import { addSeedShareRequests } from './seeder/share-requests'
-import { addSeedShareTransactions } from './seeder/share-transactions'
-import { addSeedReminders } from './seeder/reminders'
-import { addSeedNotifications } from './seeder/notifications'
 
 const docsCb = ( req: Request, res: Response ) => {
   res.json( {
@@ -138,8 +131,6 @@ export class Backend {
     await ensureTableExists()
     await addDefaultCategories()
     await addSeedUsers()
-    await addSeedConnections()
     await addSeedItems()
-    await addSeedItemImages()
   }
 }
