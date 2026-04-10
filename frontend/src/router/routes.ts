@@ -41,6 +41,11 @@ const routes: RouteRecordRaw[] = [
         path: '/items',
         component: () => import('pages/dashboard/index.vue'),
       },
+      {
+        name: 'Contacts',
+        path: '/contacts',
+        component: () => import('pages/dashboard/contacts/index.vue'),
+      },
     ],
   },
 

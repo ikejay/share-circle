@@ -9,7 +9,7 @@ export const rerouteIfNotSignedIn = async () => {
 
   if ( authStore.isAuthenticated ) {
     await authStore.fetchUser()
-    await router.push( { name: 'Dashboard' } )
+    await router.push( { name: 'Contacts' } )
   } else {
     await router.push( { name: 'Authentication' } )
   }
